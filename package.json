@@ -1,0 +1,36 @@
+{
+  "name": "cmpjs",
+  "version": "1.0.0",
+  "description": "components built tools",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:muyi0327/cmpjs.git"
+  },
+  "scripts": {
+    "test": "karma"
+  },
+  "keywords": [
+    "components",
+    "cmpjs"
+  ],
+  "bin": {
+    "cmp": "./index.js"
+  },
+  "author": "freb",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^2.9.0",
+    "parse5": "^2.1.5"
+  },
+  "devDependencies": {
+    "jasmine-core": "^2.4.1",
+    "karma": "^0.13.21",
+    "karma-chrome-launcher": "^0.2.2",
+    "karma-coverage": "^0.5.4",
+    "karma-jasmine": "^0.3.7"
+  }
+}

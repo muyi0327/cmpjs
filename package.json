@@ -24,6 +24,7 @@
   "license": "ISC",
   "dependencies": {
     "commander": "^2.9.0",
+    "node-sass": "^3.4.2",
     "parse5": "^2.1.5"
   },
   "devDependencies": {

@@ -25,7 +25,8 @@
   "dependencies": {
     "commander": "^2.9.0",
     "node-sass": "^3.4.2",
-    "parse5": "^2.1.5"
+    "parse5": "^2.1.5",
+    "umdify": "^0.1.0"
   },
   "devDependencies": {
     "jasmine-core": "^2.4.1",

@@ -11,7 +11,7 @@
     }
 </style>
 
-<template>
+<template lang="ejs">
     <article class="new-box">
         <dl class="new-content">
             <dt class="new-img"><img src="{{pic}}" alt=""/></dt>

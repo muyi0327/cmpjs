@@ -8,13 +8,15 @@ var path = require('path');
 var babel = require('babel-core');
 var outputFormat = ['amd', 'commonjs', 'umd'];
 var util = require('./libs/util.js');
+var command = require('./libs/command.js');
 
 program
     .version('1.0.0')
     .allowUnknownOption()
-    .option('-f, --format [value]', 'set export format all, amd, cjs, umd, default all', 'all')
-    .option('-c, --config [value]', 'set config file path', './cmp.config.js')
-    .option('-b, --build [value]', 'set config file path', './example/test.js');
+    .option('-c, --config [value]', 'set config file path', './cmp.config.js');
+
+// 注册命令
+command.registerCommand(program);
 
 program.parse(process.argv);
 

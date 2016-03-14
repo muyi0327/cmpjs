@@ -9,6 +9,7 @@ var babel = require('babel-core');
 var outputFormat = ['amd', 'commonjs', 'umd'];
 var util = require('./libs/util.js');
 var command = require('./libs/command.js');
+var packageJSON = require('./package.json');
 
 program
     .version('1.0.0')
@@ -16,7 +17,7 @@ program
     .option('-c, --config [value]', 'set config file path', './cmp.config.js');
 
 // 注册命令
-command.registerCommand(program);
+command.registerCommand(program, packageJSON);
 
 program.parse(process.argv);
 

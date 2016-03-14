@@ -3,7 +3,7 @@ var dom5 = require('dom5');
 var fs = require('fs');
 
 /**
- * 解析组件文件
+ * 瑙ｆ瀽缁勪欢鏂囦欢
  * @param nodes
  */
 exports.analysisFileContent = function (nodes) {
@@ -29,7 +29,7 @@ exports.analysisFileContent = function (nodes) {
 };
 
 /**
- * 获取节点内容
+ * 鑾峰彇鑺傜偣鍐呭
  * @param node
  */
 exports.getNodeContent = function (node) {
@@ -40,7 +40,7 @@ exports.getNodeContent = function (node) {
         content = node.content,
         last = childNodes && childNodes[0];
 
-    // 获取模板内容
+    // 鑾峰彇妯℃澘鍐呭
     if (node.nodeName === 'template'){
         return parse5.serialize(content);
     }

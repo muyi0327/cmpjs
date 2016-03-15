@@ -9,7 +9,7 @@ var babel = require('babel-core');
 var outputFormat = ['amd', 'commonjs', 'umd'];
 var util = require('./libs/util.js');
 var command = require('./libs/command.js');
-var pkg = require(__dirname, '/pakcage.json');
+var pkg = require(path.join(__dirname, '/pakcage.json'));
 
 program
     .version('1.0.0')

@@ -11,7 +11,8 @@
     "url": "git@github.com:muyi0327/cmpjs.git"
   },
   "scripts": {
-    "test": "karma"
+    "test": "karma",
+    "start": "node ./ build"
   },
   "keywords": [
     "components",

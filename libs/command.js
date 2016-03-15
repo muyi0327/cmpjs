@@ -1,3 +1,4 @@
+
 "use strict";
 var inquirer = require("inquirer");
 var output = require('./output');
@@ -27,7 +28,8 @@ function build(program) {
 
 /**
  *创建配置文件命令
- *@param
+ *@param program {Object} Commander类
+ *@param pkg {Object} 当组件package.json配置信息
  **/
 function init(program, pkg) {
   return program

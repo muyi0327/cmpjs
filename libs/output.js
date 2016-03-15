@@ -2,6 +2,7 @@
 
 var fs = require('fs');
 var path = require('path');
+var StringToString = require('string-to-stream');
 
 /**
  *创建config文件
@@ -20,8 +21,12 @@ exports.createConfig = function(options){
     throw(new Error('Component name required'));
   }
 
-  configFilePath = path.join(__dirname, path.resolve(dest, filename));
+  configFilePath = path.join(__dirname,filename);
+
+  StringToString(JSON.stringify({
+    name:name,
+    format:format
+  }, null, "  ")).pipe(fs.createWriteStream(configFilePath))
 
   console.log(configFilePath);
-
 }

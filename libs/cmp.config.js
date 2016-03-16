@@ -1,0 +1,4 @@
+{
+  "name": "cmpjs",
+  "format": "all"
+}

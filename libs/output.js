@@ -4,9 +4,9 @@ var fs = require('fs');
 var path = require('path');
 var StringToString = require('string-to-stream');
 
- *创建config文件
- *@param options {Object}
- **/
+ /**创建config文件
+  *@param options {Object}
+  **/
 exports.createConfig = function(options){
   options = options || {};
   var name = options.name,

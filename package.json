@@ -1,6 +1,6 @@
 {
   "name": "cmpjs",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "components built tools",
   "main": "index.js",
   "directories": {
@@ -12,7 +12,7 @@
   },
   "scripts": {
     "test": "karma",
-    "start": "node ./ build"
+    "start": "node ./ init"
   },
   "keywords": [
     "components",
@@ -21,7 +21,7 @@
   "bin": {
     "cmp": "./index.js"
   },
-  "author": "freb",
+  "author": "freb <yfdezhuye@163.com>",
   "license": "ISC",
   "dependencies": {
     "babel-core": "^6.6.5",
@@ -34,8 +34,7 @@
     "inquirer": "^0.12.0",
     "node-sass": "^3.4.2",
     "parse5": "^2.1.5",
-    "parse5-utils": "^1.4.1",
-    "string-to-stream": "^1.0.1"
+    "parse5-utils": "^1.4.1"
   },
   "devDependencies": {
     "jasmine-core": "^2.4.1",

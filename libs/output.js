@@ -1,7 +1,7 @@
 var util = require('./util');
 
 /**
- * 输出最终产物
+ * 鍒涘缓
  * @param opt
  */
 module.exports = function(opt){

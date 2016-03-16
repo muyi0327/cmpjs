@@ -12,7 +12,7 @@ exports.regist = function (program, pkg) {
 
 /**
  *创建产物
- *
+ *@param program {Object} Commander类
  **/
 function build(program) {
   return program
@@ -83,7 +83,11 @@ function init(program, pkg) {
 
       inquirer.prompt( questions, function( answers ) {
         console.log("\nOrder receipt:");
-        console.log( JSON.stringify(answers, null, "  ") );
+        if (answers.confirm){
+          console.log( JSON.stringify(answers, null, "  ") );
+        }else{
+          console.log('Aborting');
+        }
       });
     });
 }

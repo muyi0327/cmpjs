@@ -79,11 +79,11 @@ exports.compileJs = function (str, originType, options) {
 }
 
 /**
- *
- *
+ * format jsString
+ * @param str {String} jsString
+ * @param formats {Array} format types amd, umd, commonjs
  **/
 exports.formatJs = function (str, formats, options) {
-    console.log('babel:', str);
   var formatCodes = {};
   formats.forEach(function (format) {
       formatCodes[format] = babel.transform(str, {

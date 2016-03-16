@@ -7,7 +7,7 @@ var baseDir = process.cwd();
 var dom5 = require('dom5');
 var parse5 = require('parse5');
 var htmlMinifier = require('html-minifier').minify;
-var outputFormat = ['amd', 'commonjs', 'umd'];
+var outputFormat = ['amd', 'commonjs', 'umd', 'systemjs'];
 
 /**
  * create build files
@@ -32,16 +32,14 @@ exports.createDest = function(config) {
     if (format && format !== 'all') {
         outputFormat = [format];
     }
-    console.log(entryPath);
+
     fs.readFile(entryPath, function(err, data) {
         var tags, style, template, script;
         if (err) {
             throw err;
         }
-        console.log(data);
 
         tags = util.analysisFileContent(data.toString());
-        console.log(tags);
 
         style = tags.style;
         style = util.compileCss(style.content, style.lang||'sass');
@@ -56,8 +54,6 @@ exports.createDest = function(config) {
             collapseWhitespace: true,
             removeTagWhitespace: true
         }) + "';\n" + script;
-
-        console.log(script);
 
         exports.createFormats(util.formatJs(script, outputFormat), name, dest);
     });
@@ -119,7 +115,6 @@ exports.createFormats = function(formatCodes, name, dest) {
               if(err){
                   return console.log(err);
               }
-
               console.log(p);
           });
         });

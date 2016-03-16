@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-console.log(1111111)
+
 var program = require('commander');
 var parse5 = require('parse5');
 var dom5 = require('dom5');
@@ -9,16 +9,14 @@ var babel = require('babel-core');
 var outputFormat = ['amd', 'commonjs', 'umd'];
 var util = require('./libs/util.js');
 var command = require('./libs/command.js');
-console.log(__dirname)
-var pkg = require(path.join(__dirname, './package.json'));
+var baseDir = process.cwd();
 
 program
     .version('1.0.3')
-    .allowUnknownOption()
-    .option('-c, --config [value]', 'set config file path', './cmp.config.js');
+    .allowUnknownOption();
 
 // 注册命令
-command.regist(program, pkg);
+command.regist(program);
 
 program.parse(process.argv);
 

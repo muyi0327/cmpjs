@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-
+console.log(1111111)
 var program = require('commander');
 var parse5 = require('parse5');
 var dom5 = require('dom5');
@@ -9,10 +9,11 @@ var babel = require('babel-core');
 var outputFormat = ['amd', 'commonjs', 'umd'];
 var util = require('./libs/util.js');
 var command = require('./libs/command.js');
+console.log(__dirname)
 var pkg = require(path.join(__dirname, './package.json'));
 
 program
-    .version('1.0.0')
+    .version('1.0.3')
     .allowUnknownOption()
     .option('-c, --config [value]', 'set config file path', './cmp.config.js');
 

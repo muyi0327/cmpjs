@@ -1,9 +1,9 @@
 
 "use strict";
 var inquirer = require("inquirer");
-var create = require('./create');
+var output = require('./output');
 var path = require('path');
-
+var stream = require('stream');
 
 exports.regist = function (program, pkg) {
   build(program, pkg);
@@ -36,6 +36,7 @@ function init(program, pkg) {
     .command('init [filename]')
     .description('Create component configuration file')
     .action(function (filename) {
+      filename = filename || './cmp.config.js';
       var questions = [{
           type: "input",
           name: "name",
@@ -54,21 +55,26 @@ function init(program, pkg) {
         },{
           type:"input",
           name:"entry",
-          message:"Please enter component entry filename",
+          message:"Please enter the name of the component entry file",
           default:function () {
             return pkg.main||'./index.cmp';
           }
         },{
           type:"input",
+          name:"description",
+          message:"Please enter a component description information",
+          default:''
+        },{
+          type:"input",
           name:"dest",
-          message:"Please enter component dist path",
+          message:"Enter the target path for the component file",
           default:function () {
             return './dist';
           }
         },{
           type: "list",
           name: "format",
-          message: "Please select the build file format",
+          message: "Please enter the format of the component",
           choices: [ "all", "cjs", "amd", "umd" ],
           default: function(  ) {
             return 'all'
@@ -76,18 +82,19 @@ function init(program, pkg) {
         },{
             type: "confirm",
             name: "confirm",
-            message: "confirm all confirm set",
+            message: "Whether to confirm the above information",
             default: true
         }
       ];
 
       inquirer.prompt( questions, function( answers ) {
-        console.log("\nOrder receipt:");
-        if (answers.confirm){
-          console.log( JSON.stringify(answers, null, "  ") );
-        }else{
-          console.log('Aborting');
+        if (!answers.confirm){
+          return console.log('Aborting');
         }
+
+        console.log( JSON.stringify(answers, null, "  ") );
+        answers.filename = filename;
+        output.createConfig(answers);
       });
     });
 }

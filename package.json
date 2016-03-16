@@ -1,6 +1,6 @@
 {
   "name": "cmpjs",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "components built tools",
   "main": "index.js",
   "directories": {
@@ -19,7 +19,7 @@
     "cmpjs"
   ],
   "bin": {
-    "cmp": "./index.js"
+    "cmpjs": "./index.js"
   },
   "author": "freb <yfdezhuye@163.com>",
   "license": "ISC",

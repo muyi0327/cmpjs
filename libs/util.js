@@ -67,22 +67,36 @@ exports.getNodeContent = function (node) {
  * @param str {String}
  * @param originType {String} sass or less
  * @param options {Object}
- * @return cssString
  **/
-exports.compileCss = function (str, originType, options) {
+exports.compileCss = function (str, originType, callback) {
     var cssStr='';
     originType = originType || 'sass';
     if (!str){
-        return '';
+        throw('arguments 0 must a not empty string');
     }
 
     if(originType==='sass'){
-        cssStr = sass.renderSync({data:str});
+        sass.render({
+            data:str,
+            outputStyle:'compressed'
+        }, function (err, result) {
+            if (typeof callback == 'function'){
+                if (err){
+                    return callback(err);
+                }
+                callback(null, result.css.toString());
+            }
+        });
     }else if(originType==='less'){
-        cssStr = less.redner(str,{sync:true});
+        less.render(str, {compress:true},function (err, cssTree) {
+            if (typeof callback == 'function'){
+                if (err){
+                    return callback(err);
+                }
+                callback(null, cssTree.css);
+            }
+        });
     }
-
-    return cssStr;
 }
 
 /**

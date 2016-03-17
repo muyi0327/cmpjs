@@ -43,22 +43,26 @@ exports.createDest = function(config) {
         tags = util.analysisFileContent(data.toString());
 
         style = tags.style;
-        style = util.compileCss(style.content, style.lang || 'sass');
+        style = util.compileCss(style.content, style.lang || 'sass', function (err, cssString) {
+            if (err){
+                throw(err);
+            }
 
-        console.log(style);
+            console.log(cssString);
 
-        template = tags.template;
+            template = tags.template;
 
-        script = tags.script;
-        script = util.compileJs(script.content, script.lang || 'es6');
+            script = tags.script;
+            script = util.compileJs(script.content, script.lang || 'es6');
 
-        script = "  var template = '" + htmlMinifier(template.content, {
-            removeComments: true,
-            collapseWhitespace: true,
-            removeTagWhitespace: true
-        }) + "';\n" + script;
+            script = "  var template = '" + htmlMinifier(template.content, {
+                removeComments: true,
+                collapseWhitespace: true,
+                removeTagWhitespace: true
+            }) + "';\n" + script;
 
-        exports.createFormats(util.formatJs(script, outputFormat), name, dest);
+            exports.createFormats(util.formatJs(script, outputFormat), name, dest);
+        });
     });
 }
 

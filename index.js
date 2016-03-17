@@ -9,15 +9,15 @@ var babel = require('babel-core');
 var outputFormat = ['amd', 'commonjs', 'umd'];
 var util = require('./libs/util.js');
 var command = require('./libs/command.js');
-var pkg = require(path.join(__dirname, '/pakcage.json'));
+var baseDir = process.cwd();
 
+console.log('dev');
 program
-    .version('1.0.0')
-    .allowUnknownOption()
-    .option('-c, --config [value]', 'set config file path', './cmp.config.js');
+    .version('1.0.4')
+    .allowUnknownOption();
 
 // 注册命令
-command.regist(program, pkg);
+command.regist(program);
 
 program.parse(process.argv);
 

@@ -2,12 +2,13 @@
 
 var fs = require('fs');
 var path = require('path');
-var util = require('./util');
-var baseDir = process.cwd();
 var dom5 = require('dom5');
 var parse5 = require('parse5');
 var htmlMinifier = require('html-minifier').minify;
-var outputFormat = ['amd', 'commonjs', 'umd', 'systemjs'];
+var util = require('./util');
+var conf = require('./config');
+var outputFormat = conf.format;
+var baseDir = process.cwd();
 
 /**
  * create build files
@@ -42,7 +43,9 @@ exports.createDest = function(config) {
         tags = util.analysisFileContent(data.toString());
 
         style = tags.style;
-        style = util.compileCss(style.content, style.lang||'sass');
+        style = util.compileCss(style.content, style.lang || 'sass');
+
+        console.log(style);
 
         template = tags.template;
 
@@ -105,7 +108,8 @@ exports.createConfig = function(options) {
  * @param dest {String}
  **/
 exports.createFormats = function(formatCodes, name, dest) {
-    var keys = Object.keys(formatCodes);
+    var keys = Object.keys(formatCodes), fileLen = keys.length * 2;
+
     dest = path.join(baseDir, dest);
     if (!fs.existsSync(dest)){
         fs.mkdirSync(dest);
@@ -117,7 +121,8 @@ exports.createFormats = function(formatCodes, name, dest) {
               if(err){
                   return console.log(err);
               }
-              console.log(p);
+              console.log('creted file: ' + p + ' success');
+              if (!--fileLen) console.log('build file end!');
           });
         });
     });

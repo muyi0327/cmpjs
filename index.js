@@ -11,6 +11,7 @@ var util = require('./libs/util.js');
 var command = require('./libs/command.js');
 var baseDir = process.cwd();
 
+console.log('dev');
 program
     .version('1.0.4')
     .allowUnknownOption();

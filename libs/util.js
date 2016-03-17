@@ -2,6 +2,9 @@ var parse5 = require('parse5');
 var dom5 = require('dom5');
 var fs = require('fs');
 var babel = require('babel-core');
+var baseDir = process.cwd();
+var sass = require('node-sass');
+var less = require('less');
 
 /**
  * analysis childNodes to {template, style, script}
@@ -15,8 +18,8 @@ exports.analysisFileContent = function (str) {
     nodes = fragment.childNodes||[];
 
     nodes.forEach(function (node, index) {
-        var lang = dom5.getAttribute(node, 'lang'),
-            src = dom5.getAttribute(node, 'src'),
+        var lang = dom5.getAttribute(node, 'lang')||'',
+            src = dom5.getAttribute(node, 'src')||'',
             content = '';
         if (node.nodeName==='#text') return;
         if (!!src){
@@ -24,6 +27,7 @@ exports.analysisFileContent = function (str) {
         }else{
             content = exports.getNodeContent(node)
         }
+
         analysis[node.nodeName] = {
             type: node.nodeName,
             lang:  lang,
@@ -63,9 +67,22 @@ exports.getNodeContent = function (node) {
  * @param str {String}
  * @param originType {String} sass or less
  * @param options {Object}
+ * @return cssString
  **/
 exports.compileCss = function (str, originType, options) {
-    return str;
+    var cssStr='';
+    originType = originType || 'sass';
+    if (!str){
+        return '';
+    }
+
+    if(originType==='sass'){
+        cssStr = sass.renderSync({data:str});
+    }else if(originType==='less'){
+        cssStr = less.redner(str,{sync:true});
+    }
+
+    return cssStr;
 }
 
 /**
@@ -87,7 +104,7 @@ exports.formatJs = function (str, formats, options) {
   var formatCodes = {};
   formats.forEach(function (format) {
       formatCodes[format] = babel.transform(str, {
-          plugins: ["transform-es2015-modules-" + format]
+          plugins: [require("babel-plugin-transform-es2015-modules-" + format)]
       }).code;
   });
 

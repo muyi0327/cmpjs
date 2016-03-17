@@ -4,6 +4,7 @@ var path = require('path');
 var fs = require('fs');
 var output = require('./output');
 var baseDir = process.cwd();
+var conf = require('./config');
 var defaultConfigPath = './cmp.config.js';
 
 /**
@@ -25,6 +26,7 @@ function build(program) {
         .option("-f, --format [mode]", "Which setup mode to use")
         .option("-c, --config [path]", "config file path")
         .action(function(entry, options) {
+            console.log('build file start..');
             options = options || {};
             var format = options.format || "all",
                 configSet = {},
@@ -51,7 +53,6 @@ function build(program) {
  *@param pkg {Object} npm package.json
  **/
 function init(program) {
-    console.log('command:' + process.cwd());
     return program
         .command('init [filename]')
         .description('Create component configuration file')
@@ -92,7 +93,7 @@ function init(program) {
                 type: "list",
                 name: "format",
                 message: "\n\nPlease enter the format of the component?",
-                choices: ["all", "cjs", "amd", "umd"],
+                choices: ["all"].concat(conf.format),
                 default: function() {
                     return 'all'
                 }

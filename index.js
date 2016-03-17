@@ -12,7 +12,7 @@ var command = require('./libs/command.js');
 var baseDir = process.cwd();
 
 program
-    .version('1.0.3')
+    .version('1.0.4')
     .allowUnknownOption();
 
 // 注册命令

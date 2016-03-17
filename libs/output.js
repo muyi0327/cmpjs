@@ -101,10 +101,12 @@ exports.createConfig = function(options) {
 /**
  * create format files
  * @param formatCodes {Object}
+ * @param name {String}
+ * @param dest {String}
  **/
 exports.createFormats = function(formatCodes, name, dest) {
     var keys = Object.keys(formatCodes);
-    var dest = path.join(baseDir, dest);
+    dest = path.join(baseDir, dest);
     if (!fs.existsSync(dest)){
         fs.mkdirSync(dest);
     }

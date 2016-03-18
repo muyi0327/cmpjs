@@ -5,6 +5,8 @@ var babel = require('babel-core');
 var baseDir = process.cwd();
 var sass = require('node-sass');
 var less = require('less');
+var tsc = require('typescript-compiler');
+var coffee = require('coffee-script');
 
 /**
  * analysis childNodes to {template, style, script}
@@ -72,7 +74,7 @@ exports.compileCss = function (str, originType, callback) {
     var cssStr='';
     originType = originType || 'sass';
     if (!str){
-        throw('arguments 0 must a not empty string');
+        throw('arguments 0 must be not empty');
     }
 
     if(originType==='sass'){
@@ -106,6 +108,23 @@ exports.compileCss = function (str, originType, callback) {
  * @param options {Object}
  **/
 exports.compileJs = function (str, originType, options) {
+    console.log(tsc.compileString(str));
+    if (!str){
+        return '';
+    }
+
+    switch (originType) {
+        case 'ts':
+            str = tsc.compileString(str);
+            break;
+        case 'coffee':
+            str = coffee.compile(str,{ bare: 'on' });
+            console.log(str);
+            break;
+        default:
+            str = str;
+    }
+
     return str;
 }
 
@@ -116,8 +135,13 @@ exports.compileJs = function (str, originType, options) {
  **/
 exports.formatJs = function (str, formats, options) {
   var formatCodes = {};
+  console.log(formats)
   formats.forEach(function (format) {
       formatCodes[format] = babel.transform(str, {
+          moduleIds: false,
+          comments: false,
+          compact: false,
+          presets: [require('babel-preset-es2015'),require('babel-preset-stage-3')],
           plugins: [require("babel-plugin-transform-es2015-modules-" + format)]
       }).code;
   });

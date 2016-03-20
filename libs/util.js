@@ -5,6 +5,9 @@ var babel = require('babel-core');
 var baseDir = process.cwd();
 var sass = require('node-sass');
 var less = require('less');
+var UglifyJS = require('uglify-js');
+var es2015 = require('babel-preset-es2015');
+var stage3 = require('babel-preset-stage-3');
 
 /**
  * analysis childNodes to {template, style, script}
@@ -71,8 +74,13 @@ exports.getNodeContent = function (node) {
 exports.compileCss = function (str, originType, callback) {
     var cssStr='';
     originType = originType || 'sass';
-    if (!str){
-        throw('arguments 0 must a not empty string');
+
+    if (typeof callback !== 'function'){
+      return console.log('arguments 2 must be a function!');
+    }
+
+    if (typeof str !== 'string'){
+        return callback('arguments 0 must be a string');
     }
 
     if(originType==='sass'){
@@ -118,9 +126,21 @@ exports.formatJs = function (str, formats, options) {
   var formatCodes = {};
   formats.forEach(function (format) {
       formatCodes[format] = babel.transform(str, {
+          presets: [es2015, stage3],
           plugins: [require("babel-plugin-transform-es2015-modules-" + format)]
       }).code;
   });
 
   return formatCodes;
+}
+
+
+exports.compressJs = function (code) {
+  var ast = UglifyJS.parse(code);
+  ast.figure_out_scope();
+  ast.compute_char_frequency();
+  ast.mangle_names();
+  code = ast.print_to_string();
+
+  return code;
 }

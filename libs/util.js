@@ -16,26 +16,27 @@ var stage3 = require('babel-preset-stage-3');
  * @param str {String}
  * @return {Object}
  */
-exports.analysisFileContent = function (str) {
-    var analysis = {}, fragment, nodes;
+exports.analysisFileContent = function(str) {
+    var analysis = {},
+        fragment, nodes;
 
     fragment = parse5.parseFragment(str);
-    nodes = fragment.childNodes||[];
+    nodes = fragment.childNodes || [];
 
-    nodes.forEach(function (node, index) {
-        var lang = dom5.getAttribute(node, 'lang')||'',
-            src = dom5.getAttribute(node, 'src')||'',
+    nodes.forEach(function(node, index) {
+        var lang = dom5.getAttribute(node, 'lang') || '',
+            src = dom5.getAttribute(node, 'src') || '',
             content = '';
-        if (node.nodeName==='#text') return;
-        if (!!src){
+        if (node.nodeName === '#text') return;
+        if (!!src) {
             content = fs.readFileSync(src, 'utf8');
-        }else{
+        } else {
             content = exports.getNodeContent(node)
         }
 
         analysis[node.nodeName] = {
             type: node.nodeName,
-            lang:  lang,
+            lang: lang,
             content: content
         }
     });
@@ -48,7 +49,7 @@ exports.analysisFileContent = function (str) {
  * @param node
  * @return {String}
  */
-exports.getNodeContent = function (node) {
+exports.getNodeContent = function(node) {
     if (!node) {
         return '';
     }
@@ -57,7 +58,7 @@ exports.getNodeContent = function (node) {
         last = childNodes && childNodes[0];
 
     // get template content
-    if (node.nodeName === 'template'){
+    if (node.nodeName === 'template') {
         return parse5.serialize(content);
     }
 
@@ -73,26 +74,26 @@ exports.getNodeContent = function (node) {
  * @param originType {String} sass or less
  * @param options {Object}
  **/
-exports.compileCss = function (str, originType, callback) {
-    var cssStr='';
+exports.compileCss = function(str, originType, callback) {
+    var cssStr = '';
     originType = originType || 'sass';
 
-    if (typeof callback !== 'function'){
-      return console.log('arguments 2 must be a function!');
+    if (typeof callback !== 'function') {
+        return console.log('arguments 2 must be a function!');
     }
 
-    if (typeof str !== 'string'){
+    if (typeof str !== 'string') {
         return callback('arguments 0 must be a string');
     }
 
     switch (originType) {
         case 'sass':
             sass.render({
-                data:str,
-                outputStyle:'compressed'
-            }, function (err, result) {
-                if (typeof callback == 'function'){
-                    if (err){
+                data: str,
+                outputStyle: 'compressed'
+            }, function(err, result) {
+                if (typeof callback == 'function') {
+                    if (err) {
                         return callback(err);
                     }
                     callback(null, result.css.toString());
@@ -100,9 +101,11 @@ exports.compileCss = function (str, originType, callback) {
             });
             break;
         case 'less':
-            less.render(str, {compress:true},function (err, cssTree) {
-                if (typeof callback == 'function'){
-                    if (err){
+            less.render(str, {
+                compress: true
+            }, function(err, cssTree) {
+                if (typeof callback == 'function') {
+                    if (err) {
                         return callback(err);
                     }
                     callback(null, cssTree.css);
@@ -119,14 +122,16 @@ exports.compileCss = function (str, originType, callback) {
  * @param originType {String} coffe, es6, typeScript
  * @param options {Object}
  **/
-exports.compileJs = function (str, originType, options) {
+exports.compileJs = function(str, originType, options) {
     str = str || '';
     switch (originType) {
         case 'ts':
             str = tsc.compileString(str);
             break;
         case 'coffee':
-            str = coffee.compile(str,{ bare: 'on' });
+            str = coffee.compile(str, {
+                bare: 'on'
+            });
             console.log(str);
             break;
         default:
@@ -141,28 +146,28 @@ exports.compileJs = function (str, originType, options) {
  * @param str {String} jsString
  * @param formats {Array} format types amd, umd, commonjs
  **/
-exports.formatJs = function (str, formats, options) {
-  var formatCodes = {};
-  formats.forEach(function (format) {
-      formatCodes[format] = babel.transform(str, {
-          presets: [es2015, stage3],
-          plugins: [require("babel-plugin-transform-es2015-modules-" + format)]
-      }).code;
-  });
+exports.formatJs = function(str, formats, options) {
+    var formatCodes = {};
+    formats.forEach(function(format) {
+        formatCodes[format] = babel.transform(str, {
+            presets: [es2015, stage3],
+            plugins: [require("babel-plugin-transform-es2015-modules-" + format)]
+        }).code;
+    });
 
-  return formatCodes;
+    return formatCodes;
 }
 
 /**
  * compress javascript file
  * @param code {String} javascript string
  **/
-exports.compressJs = function (code) {
-  var ast = UglifyJS.parse(code);
-  ast.figure_out_scope();
-  ast.compute_char_frequency();
-  ast.mangle_names();
-  code = ast.print_to_string();
+exports.compressJs = function(code) {
+    var ast = UglifyJS.parse(code);
+    ast.figure_out_scope();
+    ast.compute_char_frequency();
+    ast.mangle_names();
+    code = ast.print_to_string();
 
-  return code;
+    return code;
 }

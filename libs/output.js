@@ -59,7 +59,7 @@ exports.createDest = function(config) {
                 collapseWhitespace: true,
                 removeTagWhitespace: true
             })
-            + "';\n" + __importComponentStyle.toString()
+            + "';\n" + __cmp__importComponentStyle.toString()
             + '\n __cmp__importComponentStyle("'+cssString.replace('\n','').replace(/"/g, "'")+'","'+name+'");\n'
             + script;
 

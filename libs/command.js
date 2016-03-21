@@ -28,7 +28,7 @@ function build(program) {
         .action(function(entry, options) {
             console.log('build file start..');
             options = options || {};
-            var format = options.format || "all",
+            var format = options.format,
                 configSet = {},
                 configFilePath = path.join(baseDir,options.config || defaultConfigPath);
 
@@ -45,7 +45,7 @@ function build(program) {
 
             // options is first
             configSet.entry = entry || _entry;
-            configSet.entry = format || _format;
+            configSet.format = format || _format || 'all';
 
             output.createDest(configSet);
         });

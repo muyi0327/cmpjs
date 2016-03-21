@@ -13,8 +13,8 @@
 })(this, function (exports, a) {
     'use strict';
 
-    var template = '<article class="new-box"><dl class="new-content"><dt class="new-img"><img src="{{pic}}"alt=""></dt><dd><h2 class="new-title">{{title}}</h2><div class="new-body">{{content}}</div></dd></dl></article>';
-    function __importComponentStyle(code, componentName) {
+    var __template = '<article class="new-box"><dl class="new-content"><dt class="new-img"><img src="{{pic}}"alt=""></dt><dd><h2 class="new-title">{{title}}</h2><div class="new-body">{{content}}</div></dd></dl></article>';
+    function __cmp__importComponentStyle(code, componentName) {
         var styleId = 'cmpjs_' + componentName;
         if (document.querySelector('#' + styleId)) {
             return;
@@ -30,7 +30,7 @@
         var head = document.getElementsByTagName("head")[0];
         head.appendChild(style);
     }
-    __importComponentStyle(".new-box{width:100%;min-height:240px}.new-box .new-content{display:flex}.new-box .new-content .dt{flex-basis:100px}", "NewBox");
+    __cmp__importComponentStyle(".new-box{width:100%;min-height:240px}.new-box .new-content{display:flex}.new-box .new-content .dt{flex-basis:100px}", "NewBox");
 
     exports.done = function () {
         a.done();

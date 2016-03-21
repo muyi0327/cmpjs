@@ -12,7 +12,7 @@
 </style>
 
 <template lang="ejs">
-    <article class="new-box">
+    <new-box class="new-box">
         <dl class="new-content">
             <dt class="new-img"><img src="{{pic}}" alt=""/></dt>
             <dd>
@@ -20,12 +20,19 @@
                 <div class="new-body">{{content}}</div>
             </dd>
         </dl>
-    </article>
+    </new-box>
 </template>
 
 <script>
-    var a = require('./a.js');
-    exports.done = function(){
-        a.done();
+    var proto = Object.create(HTMLElement.protototype, {
+        createdCallback: {
+            value: function(){
+
+            }
+        }
     }
+    var NewBox = document.registerElement('new-box', {
+        ptorotype: proto
+    );
+    });
 </script>

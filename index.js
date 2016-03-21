@@ -10,8 +10,10 @@ var outputFormat = ['amd', 'commonjs', 'umd'];
 var util = require('./libs/util.js');
 var command = require('./libs/command.js');
 var baseDir = process.cwd();
+var es2015 = require('babel-preset-es2015');
 
 console.log('dev');
+
 program
     .version('1.0.4')
     .allowUnknownOption();
@@ -40,6 +42,7 @@ function example(dir) {
 
     codes = outputFormat.map(function (format) {
         return babel.transform(str, {
+            presets:[es2015],
             plugins: ["transform-es2015-modules-" + format]
         }).code
     });

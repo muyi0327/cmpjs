@@ -7,6 +7,9 @@ var sass = require('node-sass');
 var less = require('less');
 var tsc = require('typescript-compiler');
 var coffee = require('coffee-script');
+var UglifyJS = require('uglify-js');
+var es2015 = require('babel-preset-es2015');
+var stage3 = require('babel-preset-stage-3');
 
 /**
  * analysis childNodes to {template, style, script}
@@ -73,31 +76,40 @@ exports.getNodeContent = function (node) {
 exports.compileCss = function (str, originType, callback) {
     var cssStr='';
     originType = originType || 'sass';
-    if (!str){
-        throw('arguments 0 must be not empty');
+
+    if (typeof callback !== 'function'){
+      return console.log('arguments 2 must be a function!');
     }
 
-    if(originType==='sass'){
-        sass.render({
-            data:str,
-            outputStyle:'compressed'
-        }, function (err, result) {
-            if (typeof callback == 'function'){
-                if (err){
-                    return callback(err);
+    if (typeof str !== 'string'){
+        return callback('arguments 0 must be a string');
+    }
+
+    switch (originType) {
+        case 'sass':
+            sass.render({
+                data:str,
+                outputStyle:'compressed'
+            }, function (err, result) {
+                if (typeof callback == 'function'){
+                    if (err){
+                        return callback(err);
+                    }
+                    callback(null, result.css.toString());
                 }
-                callback(null, result.css.toString());
-            }
-        });
-    }else if(originType==='less'){
-        less.render(str, {compress:true},function (err, cssTree) {
-            if (typeof callback == 'function'){
-                if (err){
-                    return callback(err);
+            });
+            break;
+        case 'less':
+            less.render(str, {compress:true},function (err, cssTree) {
+                if (typeof callback == 'function'){
+                    if (err){
+                        return callback(err);
+                    }
+                    callback(null, cssTree.css);
                 }
-                callback(null, cssTree.css);
-            }
-        });
+            });
+            break;
+        default:
     }
 }
 
@@ -108,11 +120,7 @@ exports.compileCss = function (str, originType, callback) {
  * @param options {Object}
  **/
 exports.compileJs = function (str, originType, options) {
-    console.log(tsc.compileString(str));
-    if (!str){
-        return '';
-    }
-
+    str = str || '';
     switch (originType) {
         case 'ts':
             str = tsc.compileString(str);
@@ -135,16 +143,26 @@ exports.compileJs = function (str, originType, options) {
  **/
 exports.formatJs = function (str, formats, options) {
   var formatCodes = {};
-  console.log(formats)
   formats.forEach(function (format) {
       formatCodes[format] = babel.transform(str, {
-          moduleIds: false,
-          comments: false,
-          compact: false,
-          presets: [require('babel-preset-es2015'),require('babel-preset-stage-3')],
+          presets: [es2015, stage3],
           plugins: [require("babel-plugin-transform-es2015-modules-" + format)]
       }).code;
   });
 
   return formatCodes;
+}
+
+/**
+ * compress javascript file
+ * @param code {String} javascript string
+ **/
+exports.compressJs = function (code) {
+  var ast = UglifyJS.parse(code);
+  ast.figure_out_scope();
+  ast.compute_char_frequency();
+  ast.mangle_names();
+  code = ast.print_to_string();
+
+  return code;
 }

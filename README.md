@@ -1,2 +1,5 @@
 # cmpjs
-components build tools
+Components of the generation tool
+
+## install
+    npm install cmpjs -g

@@ -23,11 +23,12 @@ exports.createDest = function(config) {
         fragment;
 
     if (!name) {
-        throw Error('Component name is required!');
+        return console.log('Component name is required!');
     }
 
     if (!fs.existsSync(path.join(baseDir, entry))) {
-        throw Error('Component entry file is required!');
+        //throw Error('Component entry file is required!');
+        return console.log('Error occurred: component entry file is required!');
     }
 
     if (format && format !== 'all') {
@@ -43,23 +44,24 @@ exports.createDest = function(config) {
         tags = util.analysisFileContent(data.toString());
 
         style = tags.style;
-        style = util.compileCss(style.content, style.lang || 'sass', function (err, cssString) {
-            if (err){
-                throw(err);
+        style = util.compileCss(style.content, style.lang || 'sass', function(err, cssString) {
+            if (err) {
+                return console.log('Error occurred:' + err);
             }
-
-            console.log(cssString);
 
             template = tags.template;
 
             script = tags.script;
             script = util.compileJs(script.content, script.lang || 'es6');
 
-            script = "  var template = '" + htmlMinifier(template.content, {
+            script = "  var __template = '" + htmlMinifier(template.content, {
                 removeComments: true,
                 collapseWhitespace: true,
                 removeTagWhitespace: true
-            }) + "';\n" + script;
+            })
+            + "';\n" + __importComponentStyle.toString()
+            + '\n __cmp__importComponentStyle("'+cssString.replace('\n','').replace(/"/g, "'")+'","'+name+'");\n'
+            + script;
 
             exports.createFormats(util.formatJs(script, outputFormat), name, dest);
         });
@@ -81,7 +83,7 @@ exports.createConfig = function(options) {
         configString;
 
     if (!name) {
-        throw (new Error('Component name required'));
+        return console.log('Component name is required!');
     }
 
     // the path of config file
@@ -112,22 +114,45 @@ exports.createConfig = function(options) {
  * @param dest {String}
  **/
 exports.createFormats = function(formatCodes, name, dest) {
-    var keys = Object.keys(formatCodes), fileLen = keys.length * 2;
+    var keys = Object.keys(formatCodes),
+        fileLen = keys.length * 2;
 
     dest = path.join(baseDir, dest);
-    if (!fs.existsSync(dest)){
+    if (!fs.existsSync(dest)) {
         fs.mkdirSync(dest);
     }
     keys.forEach(function(k, i) {
         [name + '.' + k + '.js', name + '.' + k + '.min.js'].forEach(function(p) {
-          p = path.join(dest, p);
-          fs.writeFile(p, formatCodes[k], function (err, data) {
-              if(err){
-                  return console.log(err);
-              }
-              console.log('creted file: ' + p + ' success');
-              if (!--fileLen) console.log('build file end!');
-          });
+            var jsStr = formatCodes[k];
+            if (p.indexOf('.min.js') > 0) {
+                jsStr = util.compressJs(jsStr);
+            }
+            p = path.join(dest, p);
+            fs.writeFile(p, jsStr, 'utf8', function(err, data) {
+                if (err) {
+                    return console.log(err);
+                }
+                console.log('creted file: ' + p + ' success');
+                if (!--fileLen) console.log('build file end!');
+            });
         });
     });
+}
+
+
+function __cmp__importComponentStyle(code, componentName) {
+    var styleId = 'cmpjs_' + componentName;
+    if (document.querySelector('#'+styleId)) {
+        return;
+    }
+    var style = document.createElement("style");
+    style.type = "text/css";
+    style.id = styleId;
+    try {
+        style.appendChild(document.createTextNode(code));
+    } catch (ex) {
+        style.styleSheet.cssText = code;
+    }
+    var head = document.getElementsByTagName("head")[0];
+    head.appendChild(style);
 }

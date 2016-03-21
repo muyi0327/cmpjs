@@ -24,6 +24,7 @@
   "author": "freb <yfdezhuye@163.com>",
   "license": "ISC",
   "dependencies": {
+    "autoprefix": "^0.1.4",
     "babel-core": "^6.7.2",
     "babel-plugin-transform-es2015-modules-amd": "^6.6.5",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.7.0",
@@ -42,9 +43,9 @@
     "node-sass": "^3.4.2",
     "parse5": "^2.1.5",
     "parse5-utils": "^1.4.1",
-    "string-to-stream": "^1.0.1",
-    "typescript": "^1.8.9",
-    "typescript-compiler": "^1.4.1"
+    "typescript-compiler": "^1.4.1",
+    "postcss": "^5.0.19",
+    "uglify-js": "^2.6.2"
   },
   "devDependencies": {
     "jasmine-core": "^2.4.1",

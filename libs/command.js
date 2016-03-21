@@ -41,8 +41,12 @@ function build(program) {
             configSet = require(configFilePath);
 
             var _entry = configSet.entry;
+            var _format = configSet.format;
 
+            // options is first
             configSet.entry = entry || _entry;
+            configSet.entry = format || _format;
+
             output.createDest(configSet);
         });
 }

@@ -10,6 +10,40 @@ var conf = require('./config');
 var outputFormat = conf.format;
 var baseDir = process.cwd();
 
+
+/**
+ * create product files from format object
+ * {
+ *    style: {},
+ *    script: {},
+ *    template: {}
+ * }
+ **/
+exports.createFilesFromTags = function (tags, outputFormat, dest, filename) {
+    var style, template, script
+    style = tags.style;
+    style = util.compileCss(style.content, style.lang || 'sass', function(err, cssString) {
+        if (err) {
+            return console.log('Error occurred:' + err);
+        }
+
+        template = tags.template;
+
+        script = tags.script;
+        script = util.compileJs(script.content, script.lang || 'es6');
+
+        script = "  var __template = '" + htmlMinifier(template.content, {
+            removeComments: true,
+            collapseWhitespace: true,
+            removeTagWhitespace: true
+        })
+        + "';\n" + __cmp__importComponentStyle.toString()
+        + '\n __cmp__importComponentStyle("'+cssString.replace('\n','').replace(/"/g, "'")+'","'+filename+'");\n'
+        + script;
+
+        exports.createFormats(util.formatJs(script, outputFormat), filename, dest);
+    });
+}
 /**
  * create build files
  **/
@@ -19,14 +53,17 @@ exports.createDest = function(config) {
         format = config.format || 'all',
         dest = config.dest || './dist',
         entry = config.entry || './index.cmp',
-        entryPath = path.join(baseDir, entry),
-        fragment;
+        entryPath = typeof entry == 'string' && path.join(baseDir, entry),
+        fragment,
+        _tags={},
+        lang,
+        entryKeys, elen = 3;
 
     if (!name) {
         return console.log('Component name is required!');
     }
 
-    if (!fs.existsSync(path.join(baseDir, entry))) {
+    if (typeof entry == 'string' && !fs.existsSync(path.join(baseDir, entry))) {
         //throw Error('Component entry file is required!');
         return console.log('Error occurred: component entry file is required!');
     }
@@ -35,36 +72,49 @@ exports.createDest = function(config) {
         outputFormat = [format];
     }
 
+    if (Object.prototype.toString.call(entry) == '[object Object]'){
+        _tags.style = {
+            type: 'style',
+            lang: path.extname[entry.style] == 'scss' ? 'sass' : path.extname[entry.style]
+        }
+
+        _tags.script = {
+            type: 'script',
+            lang: path.extname[entry.script]
+        }
+
+        _tags.template = {
+            type: 'template',
+            lang: ''
+        }
+
+        entryKeys = Object.keys(entry);
+
+        return entryKeys.forEach(function (type) {
+            var _url = entry[type];
+            fs.readFile(_url, function (err, str) {
+                --elen;
+                if (err){
+                    _tags[type].content = '';
+                }else{
+                    _tags[type].content = str.toString();
+                }
+                if (!elen){
+                    exports.createFilesFromTags(_tags, outputFormat, dest, name);
+                }
+            });
+        });
+    }
+
     fs.readFile(entryPath, function(err, data) {
-        var tags, style, template, script;
+        var tags;
         if (err) {
             throw err;
         }
 
         tags = util.analysisFileContent(data.toString());
 
-        style = tags.style;
-        style = util.compileCss(style.content, style.lang || 'sass', function(err, cssString) {
-            if (err) {
-                return console.log('Error occurred:' + err);
-            }
-
-            template = tags.template;
-
-            script = tags.script;
-            script = util.compileJs(script.content, script.lang || 'es6');
-
-            script = "  var __template = '" + htmlMinifier(template.content, {
-                removeComments: true,
-                collapseWhitespace: true,
-                removeTagWhitespace: true
-            })
-            + "';\n" + __cmp__importComponentStyle.toString()
-            + '\n __cmp__importComponentStyle("'+cssString.replace('\n','').replace(/"/g, "'")+'","'+name+'");\n'
-            + script;
-
-            exports.createFormats(util.formatJs(script, outputFormat), name, dest);
-        });
+        exports.createFilesFromTags(tags, outputFormat, dest, name);
     });
 }
 

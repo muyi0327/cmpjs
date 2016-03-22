@@ -82,6 +82,10 @@ exports.compileCss = function(str, originType, callback) {
         return console.log('arguments 2 must be a function!');
     }
 
+    if (str instanceof Buffer){
+        str = str.toString();
+    }
+
     if (typeof str !== 'string') {
         return callback('arguments 0 must be a string');
     }

@@ -139,7 +139,7 @@ exports.compileJs = function(str, originType, options) {
             console.log(str);
             break;
         default:
-            str = str;
+
     }
 
     return str;

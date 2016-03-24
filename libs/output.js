@@ -54,9 +54,7 @@ exports.createDest = function(config) {
         dest = config.dest || './dist',
         entry = config.entry || './index.cmp',
         entryPath = typeof entry == 'string' && path.join(baseDir, entry),
-        fragment,
         _tags={},
-        lang,
         entryKeys, elen = 3;
 
     if (!name) {

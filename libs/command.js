@@ -8,6 +8,7 @@ var baseDir = process.cwd();
 var conf = require('./config');
 var defaultConfigPath = './cmp.config.js';
 var exec = require('child_process').exec;
+var pkg = require(path.join(baseDir + '/package.json'));
 
 /**
  * regist commands
@@ -33,6 +34,7 @@ function build(program) {
             options = options || {};
             var format = options.format,
                 configSet = {},
+                _entry, _format,
                 configFilePath = path.join(baseDir, options.config || defaultConfigPath);
 
             if (!fs.existsSync(configFilePath)) {
@@ -43,8 +45,8 @@ function build(program) {
 
             configSet = require(configFilePath);
 
-            var _entry = configSet.entry;
-            var _format = configSet.format;
+            _entry = configSet.entry;
+            _format = configSet.format;
 
             // options is first
             configSet.entry = entry || _entry;
@@ -82,6 +84,13 @@ function init(program) {
                 message: "\n\nPlease enter the name of the component entry file?",
                 default: function () {
                     return './index.cmp';
+                }
+            }, {
+                type: "input",
+                name: "version",
+                message: "\n\nPlease enter the version of the component?",
+                default: function () {
+                    return pkg.version||'';
                 }
             }, {
                 type: "input",

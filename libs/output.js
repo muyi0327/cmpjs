@@ -19,7 +19,7 @@ var baseDir = process.cwd();
  *    template: {}
  * }
  **/
-exports.createFilesFromTags = function (tags, outputFormat, dest, filename) {
+exports.createFilesFromTags = function (tags, outputFormat, dest, filename, version) {
     var style, template, script
     style = tags.style;
     style = util.compileCss(style.content, style.lang || 'sass', function(err, cssString) {
@@ -32,16 +32,16 @@ exports.createFilesFromTags = function (tags, outputFormat, dest, filename) {
         script = tags.script;
         script = util.compileJs(script.content, script.lang || 'es6');
 
-        script = "  var __template = '" + htmlMinifier(template.content, {
+        script = (template ? "  var __template = '" + htmlMinifier(template.content, {
             removeComments: true,
             collapseWhitespace: true,
             removeTagWhitespace: true
-        })
-        + "';\n" + __cmp__importComponentStyle.toString()
-        + '\n __cmp__importComponentStyle("'+cssString.replace('\n','').replace(/"/g, "'")+'","'+filename+'");\n'
+        }) : '')
+        + (cssString ? "';\n" + __cmp__importComponentStyle.toString()
+        + '\n __cmp__importComponentStyle("'+cssString.replace('\n','').replace(/"/g, "'")+'","'+filename+'");\n' : '')
         + script;
 
-        exports.createFormats(util.formatJs(script, outputFormat), filename, dest);
+        exports.createFormats(util.formatJs(script, outputFormat), filename, dest, version);
     });
 }
 /**
@@ -52,6 +52,7 @@ exports.createDest = function(config) {
     var name = config.name,
         format = config.format || 'all',
         dest = config.dest || './dist',
+        version = config.version || '',
         entry = config.entry || './index.cmp',
         entryPath = typeof entry == 'string' && path.join(baseDir, entry),
         _tags={},
@@ -98,7 +99,7 @@ exports.createDest = function(config) {
                     _tags[type].content = str.toString();
                 }
                 if (!elen){
-                    exports.createFilesFromTags(_tags, outputFormat, dest, name);
+                    exports.createFilesFromTags(_tags, outputFormat, dest, name, version);
                 }
             });
         });
@@ -112,7 +113,7 @@ exports.createDest = function(config) {
 
         tags = util.analysisFileContent(data.toString());
 
-        exports.createFilesFromTags(tags, outputFormat, dest, name);
+        exports.createFilesFromTags(tags, outputFormat, dest, name, version);
     });
 }
 
@@ -142,7 +143,9 @@ exports.createConfig = function(options) {
         name: name,
         dest: dest,
         format: format,
-        entry: entry
+        entry: entry,
+        importCss: false,
+        version: version
     }, null, "  ");
 
     fs.writeFile(configFilePath, "'use strict'\n\nmodule.exports = " + configString, function(err) {
@@ -160,22 +163,31 @@ exports.createConfig = function(options) {
  * @param formatCodes {Object}
  * @param name {String}
  * @param dest {String}
+ * @param version {String}
  **/
-exports.createFormats = function(formatCodes, name, dest) {
+exports.createFormats = function(formatCodes, name, dest, version) {
     var keys = Object.keys(formatCodes),
         fileLen = keys.length * 2;
 
     dest = path.join(baseDir, dest);
+
     if (!fs.existsSync(dest)) {
         fs.mkdirSync(dest);
     }
+
+    // �汾Ŀ¼
+    console.log(version);
+    if (!fs.existsSync(path.join(dest,'/' + version))) {
+        fs.mkdirSync(path.join(dest,'/' + version));
+    }
+
     keys.forEach(function(k, i) {
         [name + '.' + k + '.js', name + '.' + k + '.min.js'].forEach(function(p) {
             var jsStr = formatCodes[k];
             if (p.indexOf('.min.js') > 0) {
                 jsStr = util.compressJs(jsStr);
             }
-            p = path.join(dest, p);
+            p = path.join(dest,'/' + version, p);
             fs.writeFile(p, jsStr, 'utf8', function(err, data) {
                 if (err) {
                     return console.log(err);

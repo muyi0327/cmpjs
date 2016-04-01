@@ -90,7 +90,7 @@ function init(program) {
                 name: "version",
                 message: "\n\nPlease enter the version of the component?",
                 default: function () {
-                    return pkg.version||'';
+                    return pkg.version||'1.0.0';
                 }
             }, {
                 type: "input",

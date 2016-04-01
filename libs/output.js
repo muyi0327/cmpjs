@@ -20,26 +20,26 @@ var baseDir = process.cwd();
  * }
  **/
 exports.createFilesFromTags = function (tags, outputFormat, dest, filename, version) {
-    var style, template, script
+    var style, template, script;
     style = tags.style;
-    style = util.compileCss(style.content, style.lang || 'sass', function(err, cssString) {
+    util.compileCss(style.content, style.lang || 'sass', function(err, cssString) {
         if (err) {
             return console.log('Error occurred:' + err);
         }
-
         template = tags.template;
-
         script = tags.script;
         script = util.compileJs(script.content, script.lang || 'es6');
 
-        script = (template ? "  var __template = '" + htmlMinifier(template.content, {
+        template = template ? ("  var __template = '" + htmlMinifier(template.content, {
             removeComments: true,
             collapseWhitespace: true,
             removeTagWhitespace: true
-        }) : '')
-        + (cssString ? "';\n" + __cmp__importComponentStyle.toString()
-        + '\n __cmp__importComponentStyle("'+cssString.replace('\n','').replace(/"/g, "'")+'","'+filename+'");\n' : '')
-        + script;
+        })) : '';
+
+        cssString = cssString ? "';\n" + __cmp__importComponentStyle.toString()
+        + '\n __cmp__importComponentStyle("'+cssString.replace('\n','').replace(/"/g, "'")+'","'+filename+'");\n' : '';
+
+        script = template + cssString + script;
 
         exports.createFormats(util.formatJs(script, outputFormat), filename, dest, version);
     });
@@ -71,26 +71,27 @@ exports.createDest = function(config) {
         outputFormat = [format];
     }
 
-    if (Object.prototype.toString.call(entry) == '[object Object]'){
+    if (util.isType(entry,'object')){
         _tags.style = {
             type: 'style',
-            lang: path.extname[entry.style] == 'scss' ? 'sass' : path.extname[entry.style]
+            lang: util.isType(entry.style,'string') && entry.style.indexOf('!') > 0 ? entry.style.split('!')[0] : 'css'
         }
 
         _tags.script = {
             type: 'script',
-            lang: path.extname[entry.script]
+            lang: util.isType(entry.script,'string') && entry.script.indexOf('!') > 0 ? entry.script.split('!')[0] : 'es6'
         }
 
         _tags.template = {
             type: 'template',
-            lang: ''
+            lang: '' // TODO set later
         }
 
         entryKeys = Object.keys(entry);
 
         return entryKeys.forEach(function (type) {
             var _url = entry[type];
+            _url = _url.indexOf('!') > 0 ? _url.split('!')[1] : _url;
             fs.readFile(_url, function (err, str) {
                 --elen;
                 if (err){

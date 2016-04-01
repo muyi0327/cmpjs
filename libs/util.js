@@ -10,6 +10,7 @@ var coffee = require('coffee-script');
 var UglifyJS = require('uglify-js');
 var es2015 = require('babel-preset-es2015');
 var stage3 = require('babel-preset-stage-3');
+var OS = Object.prototype.toString;
 
 /**
  * analysis childNodes to {template, style, script}
@@ -174,4 +175,8 @@ exports.compressJs = function(code) {
     code = ast.print_to_string();
 
     return code;
+}
+
+exports.isType = function(o,type){
+    return OS.call(o).toLocaleLowerCase() == '[object ' + type.toLowerCase() + ']';
 }

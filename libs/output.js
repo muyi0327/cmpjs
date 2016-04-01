@@ -176,8 +176,7 @@ exports.createFormats = function(formatCodes, name, dest, version) {
         fs.mkdirSync(dest);
     }
 
-    // �汾Ŀ¼
-    console.log(version);
+    // version
     if (!fs.existsSync(path.join(dest,'/' + version))) {
         fs.mkdirSync(path.join(dest,'/' + version));
     }

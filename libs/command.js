@@ -6,7 +6,6 @@ var output = require('./output');
 var baseDir = process.cwd();
 var conf = require('./config');
 var defaultConfigPath = './cmp.config.js';
-var regName = /\{\{\w+\}\}/g;
 
 /**
  * regist commands
@@ -131,7 +130,10 @@ function init(program) {
         });
 }
 
-
+/**
+ * create component
+ * @param program
+ */
 function create(program) {
     program
         .command('create <name>')
@@ -141,40 +143,25 @@ function create(program) {
                 return console.log('component name is required!')
             }
 
-            var config = require('../template/config');
-            var packageJSON = require('../template/package.json');
+            var dirName = path.join(baseDir, './' + name);
 
-            config = "'use strict'\n\nmodule.exports=" + JSON.stringify(config,null,4);
-            packageJSON = JSON.stringify(packageJSON,null,4);
-
-            config = config.replace(regName, name);
-            packageJSON = packageJSON.replace(regName, name);
-
-            fs.writeFile(path.join(baseDir, './config.cpm.js'), config, function(err) {
-                if (err) throw err;
-                console.log('the file config.js is created success!');
-            });
-
-            fs.writeFile(path.join(baseDir, './package.json'), packageJSON, function(err) {
-                if (err) throw err;
-                console.log('the file ./package.json is created success!');
-            });
-
-            ['js', 'scss', 'html'].forEach(function(type){
-                var fileName = './' + name + '.' + type;
-                fs.writeFile(path.join(baseDir, fileName), '', function(err) {
-                    if (err) throw err;
-                    console.log('the file ' + fileName +' is created success!');
+            if (!fs.statSync(dirName)){
+                return  fs.mkdir(dirName, function () {
+                    output.createComponent(name, dirName);
                 });
-            });
+            }
 
-            fs.readFile(path.join(__dirname,'../template/index.cmp'), 'utf8', function(err, data){
-                if (err) throw err;
-                data = data.replace(regName, name);
-                fs.writeFile(path.join(baseDir, './index.cmp'), data, function(err) {
-                    if (err) throw err;
-                    console.log('the file ./index.cmp is created success!');
-                });
+            inquirer.prompt([{
+                type: "confirm",
+                name: "overfile",
+                message: "destination is not empty, continue?",
+                default: true
+            }], function (answers) {
+                if (answers.overfile){
+                    return output.createComponent(name, dirName);
+                }
+
+                console.log('aborting')
             });
         });
 }

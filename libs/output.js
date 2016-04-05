@@ -7,6 +7,9 @@ var util = require('./util');
 var conf = require('./config');
 var outputFormat = conf.format;
 var baseDir = process.cwd();
+var config = require('../template/config');
+var packageJSON = require('../template/package.json');
+var regName = /\{\{\w+\}\}/g;
 
 
 /**
@@ -197,6 +200,57 @@ exports.createFormats = function (formatCodes, name, dest, version) {
             });
         });
     });
+}
+
+/**
+ *
+ * @param name
+ * @param dirName
+ */
+exports.createComponent = function(name, dirName){
+    config = "'use strict'\n\nmodule.exports=" + JSON.stringify(config,null,4);
+    packageJSON = JSON.stringify(packageJSON,null,4);
+
+    config = config.replace(regName, name);
+    packageJSON = packageJSON.replace(regName, name);
+
+    fs.writeFile(path.join(dirName, './cmp.config.js'), config, function(err) {
+        if (err) throw err;
+        console.log('the file config.js is created success!');
+    });
+
+    fs.writeFile(path.join(dirName, './package.json'), packageJSON, function(err) {
+        if (err) throw err;
+        console.log('the file ./package.json is created success!');
+    });
+
+    fs.readFile(path.join(__dirname, '../template/index.cmp'), 'utf8', function(err, data){
+        if (err) throw err;
+        data = data.replace(regName, name);
+        fs.writeFile(path.join(dirName, './index.cmp'), data, function(err) {
+            if (err) throw err;
+            console.log('the file ./index.cmp is created success!');
+        });
+    });
+
+    if (!fs.existsSync(path.join(dirName, './src'))){
+        fs.mkdirSync(path.join(dirName, './src'))
+    }
+
+    ['js', 'scss', 'html'].forEach(function(type){
+        var fileName = './src/' + name + '.' + type;
+        fs.writeFile(path.join(dirName, fileName), '', function(err) {
+            if (err) throw err;
+            console.log('the file ' + fileName +' is created success!');
+        });
+    });
+
+    if (!fs.existsSync(path.join(dirName, './test'))){
+        fs.mkdir(path.join(dirName, './test'), function(err){
+            if (err) throw err;
+            console.log('the dir ./test is created success!');
+        });
+    }
 }
 
 

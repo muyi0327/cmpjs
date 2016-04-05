@@ -154,10 +154,21 @@ exports.compileJs = function(str, originType, options) {
 exports.formatJs = function(str, formats, options) {
     var formatCodes = {};
     formats.forEach(function(format) {
-        formatCodes[format] = babel.transform(str, {
+        var _format = format,_str;
+        if (format=='cmd'){
+            _format = 'commonjs';
+        }
+
+        _str = babel.transform(str, {
             presets: [es2015, stage3],
-            plugins: [require("babel-plugin-transform-es2015-modules-" + format)]
+            plugins: [require("babel-plugin-transform-es2015-modules-" + _format)]
         }).code;
+
+        if (format=='cmd') {
+            _str = 'define(function(require, exports, module){\n' + _str + '\n});'
+        }
+
+        formatCodes[format] = _str;
     });
 
     return formatCodes;

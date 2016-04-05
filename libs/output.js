@@ -2,8 +2,6 @@
 
 var fs = require('fs');
 var path = require('path');
-var dom5 = require('dom5');
-var parse5 = require('parse5');
 var htmlMinifier = require('html-minifier').minify;
 var util = require('./util');
 var conf = require('./config');
@@ -22,7 +20,7 @@ var baseDir = process.cwd();
 exports.createFilesFromTags = function (tags, outputFormat, dest, filename, version) {
     var style, template, script;
     style = tags.style;
-    util.compileCss(style.content, style.lang || 'sass', function(err, cssString) {
+    util.compileCss(style.content, style.lang || 'sass', function (err, cssString) {
         if (err) {
             return console.log('Error occurred:' + err);
         }
@@ -37,7 +35,7 @@ exports.createFilesFromTags = function (tags, outputFormat, dest, filename, vers
         })) : '';
 
         cssString = cssString ? "';\n" + __cmp__importComponentStyle.toString()
-        + '\n __cmp__importComponentStyle("'+cssString.replace('\n','').replace(/"/g, "'")+'","'+filename+'");\n' : '';
+        + '\n __cmp__importComponentStyle("' + cssString.replace('\n', '').replace(/"/g, "'") + '","' + filename + '");\n' : '';
 
         script = template + cssString + script;
 
@@ -47,7 +45,7 @@ exports.createFilesFromTags = function (tags, outputFormat, dest, filename, vers
 /**
  * create build files
  **/
-exports.createDest = function(config) {
+exports.createDest = function (config) {
     config = config || {};
     var name = config.name,
         format = config.format || 'all',
@@ -55,7 +53,7 @@ exports.createDest = function(config) {
         version = config.version || '',
         entry = config.entry || './index.cmp',
         entryPath = typeof entry == 'string' && path.join(baseDir, entry),
-        _tags={},
+        _tags = {},
         entryKeys, elen = 3;
 
     if (!name) {
@@ -71,15 +69,15 @@ exports.createDest = function(config) {
         outputFormat = [format];
     }
 
-    if (util.isType(entry,'object')){
+    if (util.isType(entry, 'object')) {
         _tags.style = {
             type: 'style',
-            lang: util.isType(entry.style,'string') && entry.style.indexOf('!') > 0 ? entry.style.split('!')[0] : 'css'
+            lang: util.isType(entry.style, 'string') && entry.style.indexOf('!') > 0 ? entry.style.split('!')[0] : 'css'
         }
 
         _tags.script = {
             type: 'script',
-            lang: util.isType(entry.script,'string') && entry.script.indexOf('!') > 0 ? entry.script.split('!')[0] : 'es6'
+            lang: util.isType(entry.script, 'string') && entry.script.indexOf('!') > 0 ? entry.script.split('!')[0] : 'es6'
         }
 
         _tags.template = {
@@ -94,19 +92,19 @@ exports.createDest = function(config) {
             _url = _url.indexOf('!') > 0 ? _url.split('!')[1] : _url;
             fs.readFile(_url, function (err, str) {
                 --elen;
-                if (err){
+                if (err) {
                     _tags[type].content = '';
-                }else{
+                } else {
                     _tags[type].content = str.toString();
                 }
-                if (!elen){
+                if (!elen) {
                     exports.createFilesFromTags(_tags, outputFormat, dest, name, version);
                 }
             });
         });
     }
 
-    fs.readFile(entryPath, function(err, data) {
+    fs.readFile(entryPath, function (err, data) {
         var tags;
         if (err) {
             throw err;
@@ -121,7 +119,7 @@ exports.createDest = function(config) {
 /** create config file
  *@param options {Object}
  **/
-exports.createConfig = function(options) {
+exports.createConfig = function (options) {
     options = options || {};
     var name = options.name,
         dest = options.dest || './dist',
@@ -149,7 +147,7 @@ exports.createConfig = function(options) {
         version: version
     }, null, "  ");
 
-    fs.writeFile(configFilePath, "'use strict'\n\nmodule.exports = " + configString, function(err) {
+    fs.writeFile(configFilePath, "'use strict'\n\nmodule.exports = " + configString, function (err) {
         if (err) throw err;
         console.log('It\'s saved!');
         // exit
@@ -166,7 +164,7 @@ exports.createConfig = function(options) {
  * @param dest {String}
  * @param version {String}
  **/
-exports.createFormats = function(formatCodes, name, dest, version) {
+exports.createFormats = function (formatCodes, name, dest, version) {
     var keys = Object.keys(formatCodes),
         fileLen = keys.length * 2;
 
@@ -177,18 +175,20 @@ exports.createFormats = function(formatCodes, name, dest, version) {
     }
 
     // version
-    if (!fs.existsSync(path.join(dest,'/' + version))) {
-        fs.mkdirSync(path.join(dest,'/' + version));
+    if (!fs.existsSync(path.join(dest, '/' + version))) {
+        fs.mkdirSync(path.join(dest, '/' + version));
     }
 
-    keys.forEach(function(k, i) {
-        [name + '.' + k + '.js', name + '.' + k + '.min.js'].forEach(function(p) {
-            var jsStr = formatCodes[k];
-            if (p.indexOf('.min.js') > 0) {
+    keys.forEach(function (k, i) {
+        [name + '.' + k + '.js', name + '.' + k + '.min.js'].forEach(function (p) {
+            var jsStr = formatCodes[k],
+                isMin = p.indexOf('.min.js') > 0;
+            if (isMin) {
                 jsStr = util.compressJs(jsStr);
             }
-            p = path.join(dest,'/' + version, p);
-            fs.writeFile(p, jsStr, 'utf8', function(err, data) {
+
+            p = path.join(dest, '/' + version, p);
+            fs.writeFile(p, jsStr, 'utf8', function (err, data) {
                 if (err) {
                     return console.log(err);
                 }
@@ -202,7 +202,7 @@ exports.createFormats = function(formatCodes, name, dest, version) {
 
 function __cmp__importComponentStyle(code, componentName) {
     var styleId = 'cmpjs_' + componentName;
-    if (document.querySelector('#'+styleId)) {
+    if (document.querySelector('#' + styleId)) {
         return;
     }
     var style = document.createElement("style");

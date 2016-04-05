@@ -1,0 +1,5 @@
+<style src="./{{name}}.scss" lang="sass"></style>
+
+<template src="./{{name}}.html"></template>
+
+<script src="./{{name}}.js" lang="es6"></script>

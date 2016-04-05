@@ -1,14 +1,12 @@
 "use strict";
 var inquirer = require("inquirer");
-var nexpect = require('nexpect');
 var path = require('path');
 var fs = require('fs');
 var output = require('./output');
 var baseDir = process.cwd();
 var conf = require('./config');
 var defaultConfigPath = './cmp.config.js';
-var exec = require('child_process').exec;
-var pkg = require(path.join(baseDir + '/package.json'));
+var regName = /\{\{\w+\}\}/g;
 
 /**
  * regist commands
@@ -66,6 +64,7 @@ function init(program) {
         .description('Create component configuration file')
         .action(function (filename) {
             filename = filename || './cmp.config.js';
+            var pkg = require(path.join(baseDir + '/package.json'));
             var questions = [{
                 type: "input",
                 name: "name",
@@ -135,16 +134,47 @@ function init(program) {
 
 function create(program) {
     program
-        .command('create [entry]')
+        .command('create <name>')
         .description('Create component configuration file')
-        .action(function (entry) {
-            exec('npm init', function (err, stdout, stderr) {
-                if (err) {
-                    return console.log(err);
-                }
+        .action(function (name, options) {
+            if(!name){
+                return console.log('component name is required!')
+            }
 
-                console.log(stdout)
-                console.log(stderr)
-            })
+            var config = require('../template/config');
+            var packageJSON = require('../template/package.json');
+
+            config = "'use strict'\n\nmodule.exports=" + JSON.stringify(config,null,4);
+            packageJSON = JSON.stringify(packageJSON,null,4);
+
+            config = config.replace(regName, name);
+            packageJSON = packageJSON.replace(regName, name);
+
+            fs.writeFile(path.join(baseDir, './config.cpm.js'), config, function(err) {
+                if (err) throw err;
+                console.log('the file config.js is created success!');
+            });
+
+            fs.writeFile(path.join(baseDir, './package.json'), packageJSON, function(err) {
+                if (err) throw err;
+                console.log('the file ./package.json is created success!');
+            });
+
+            ['js', 'scss', 'html'].forEach(function(type){
+                var fileName = './' + name + '.' + type;
+                fs.writeFile(path.join(baseDir, fileName), '', function(err) {
+                    if (err) throw err;
+                    console.log('the file ' + fileName +' is created success!');
+                });
+            });
+
+            fs.readFile(path.join(__dirname,'../template/index.cmp'), 'utf8', function(err, data){
+                if (err) throw err;
+                data = data.replace(regName, name);
+                fs.writeFile(path.join(baseDir, './index.cmp'), data, function(err) {
+                    if (err) throw err;
+                    console.log('the file ./index.cmp is created success!');
+                });
+            });
         });
 }

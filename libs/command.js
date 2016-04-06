@@ -60,7 +60,7 @@ function build(program) {
 function init(program) {
     return program
         .command('init [filename]')
-        .description('Create component configuration file')
+        .description('Create component profile')
         .action(function (filename) {
             filename = filename || './cmp.config.js';
             var pkg = require(path.join(baseDir + '/package.json'));
@@ -137,17 +137,21 @@ function init(program) {
 function create(program) {
     program
         .command('create <name>')
-        .description('Create component configuration file')
+        .description('Create component initialization file')
         .action(function (name, options) {
+            var combine = options.parent.combine;
+
+            console.log(combine);
+
             if(!name){
                 return console.log('component name is required!')
             }
 
             var dirName = path.join(baseDir, './' + name);
 
-            if (!fs.statSync(dirName)){
+            if (!fs.existsSync(dirName)){
                 return  fs.mkdir(dirName, function () {
-                    output.createComponent(name, dirName);
+                    output.createComponent(name, {combine: combine});
                 });
             }
 
@@ -158,7 +162,7 @@ function create(program) {
                 default: true
             }], function (answers) {
                 if (answers.overfile){
-                    return output.createComponent(name, dirName);
+                    return output.createComponent(name, {combine: combine});
                 }
 
                 console.log('aborting')

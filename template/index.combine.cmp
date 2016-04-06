@@ -1,0 +1,13 @@
+<style lang="sass">
+    .{{name}}{
+
+    }
+</style>
+
+<template>
+    <{{name}}></{{name}}>
+</template>
+
+<script lang="es6">
+
+</script>

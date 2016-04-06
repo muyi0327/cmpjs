@@ -203,48 +203,92 @@ exports.createFormats = function (formatCodes, name, dest, version) {
 }
 
 /**
- *
- * @param name
- * @param dirName
+ * create component files
+ * @param name {String} component name
+ * @param options {Object} component options
  */
-exports.createComponent = function(name, dirName){
+exports.createComponent = function(name, options){
+
+    options = options || {};
+
+    var dirName = path.join(baseDir, './' + name);
+    var combine = !!options.combine;
+    //var frs = fs.createReadStream('../template/.gitignore');
+    //var fws = fs.createWriteStream(path.join(baseDir,'./.gitignore'));
+
     config = "'use strict'\n\nmodule.exports=" + JSON.stringify(config,null,4);
     packageJSON = JSON.stringify(packageJSON,null,4);
 
     config = config.replace(regName, name);
     packageJSON = packageJSON.replace(regName, name);
 
+    // create cmp.config.js file
     fs.writeFile(path.join(dirName, './cmp.config.js'), config, function(err) {
         if (err) throw err;
         console.log('the file config.js is created success!');
     });
 
+    // create package.json
     fs.writeFile(path.join(dirName, './package.json'), packageJSON, function(err) {
         if (err) throw err;
         console.log('the file ./package.json is created success!');
     });
 
-    fs.readFile(path.join(__dirname, '../template/index.cmp'), 'utf8', function(err, data){
-        if (err) throw err;
-        data = data.replace(regName, name);
-        fs.writeFile(path.join(dirName, './index.cmp'), data, function(err) {
-            if (err) throw err;
-            console.log('the file ./index.cmp is created success!');
-        });
-    });
+    // create .gitignore file
+    fs.createReadStream(path.join(__dirname,'../template/.gitignore')).pipe(fs.createWriteStream(path.join(dirName, './.gitignore')));
 
-    if (!fs.existsSync(path.join(dirName, './src'))){
-        fs.mkdirSync(path.join(dirName, './src'))
+    console.log(combine)
+
+    if (!combine){
+        // create entry file
+        fs.readFile(path.join(__dirname, '../template/index.cmp'), 'utf8', function(err, data){
+            if (err) throw err;
+            data = data.replace(regName, name);
+            fs.writeFile(path.join(dirName, './index.cmp'), data, function(err) {
+                if (err) throw err;
+                console.log('the file ./index.cmp is created success!');
+            });
+        });
+        // create src dir
+        if (!fs.existsSync(path.join(dirName, './src'))){
+            fs.mkdirSync(path.join(dirName, './src'))
+        }
+
+        // create development file
+        ['js', 'scss', 'html'].forEach(function(type){
+            var fileName = './src/' + name + '.' + type;
+            var content = '';
+            switch(type){
+                case 'scss':
+                    content = '.' + name + ' {\n\n}';
+                    break;
+                case 'html':
+                    content = '<'+name+'></'+name+'>';
+                    break;
+                case 'js':
+                    content = '';
+                    break;
+                default :
+                    break;
+            }
+            fs.writeFile(path.join(dirName, fileName), content, function(err) {
+                if (err) throw err;
+                console.log('the file ' + fileName +' is created success!');
+            });
+        });
+    }else{
+        // create entry file
+        fs.readFile(path.join(__dirname, '../template/index.combine.cmp'), 'utf8', function(err, data){
+            if (err) throw err;
+            data = data.replace(regName, name);
+            fs.writeFile(path.join(dirName, './index.cmp'), data, function(err) {
+                if (err) throw err;
+                console.log('the file ./index.cmp is created success!');
+            });
+        });
     }
 
-    ['js', 'scss', 'html'].forEach(function(type){
-        var fileName = './src/' + name + '.' + type;
-        fs.writeFile(path.join(dirName, fileName), '', function(err) {
-            if (err) throw err;
-            console.log('the file ' + fileName +' is created success!');
-        });
-    });
-
+    // create test files
     if (!fs.existsSync(path.join(dirName, './test'))){
         fs.mkdir(path.join(dirName, './test'), function(err){
             if (err) throw err;

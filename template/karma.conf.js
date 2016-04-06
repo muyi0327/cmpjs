@@ -1,5 +1,4 @@
 // Karma configuration
-// Generated on Mon Feb 15 2016 12:00:18 GMT+0800 (中国标准时间)
 
 module.exports = function(config) {
     config.set({
@@ -73,7 +72,7 @@ module.exports = function(config) {
                     windowName: 'my-window',
                     settings: {
                         webSecurityEnabled: false
-                    },
+                    }
                 },
                 flags: ['--load-images=true'],
                 debug: true

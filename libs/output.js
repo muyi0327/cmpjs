@@ -146,7 +146,8 @@ exports.createConfig = function (options) {
         dest: dest,
         format: format,
         entry: entry,
-        importCss: false,
+        importCss: conf.importCss,
+        importTemplate: conf.importTemplate,
         version: version
     }, null, "  ");
 

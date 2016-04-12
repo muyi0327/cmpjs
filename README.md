@@ -9,10 +9,10 @@ Components of the generation tool
 
 ## Documentation
 
-### create command
+### Create command
     cmpjs create <componentName> [--combine]
 
-#### example ./index.cmp
+#### Example
 
     command:
     cmpjs create new-box
@@ -21,23 +21,20 @@ Components of the generation tool
 
     ./index.cmp
     ----content:
-    <style src="./src/attention-btn.scss" lang="sass"></style>
+    <style src="./src/new-box.scss" lang="sass"></style>
 
-    <template src="./src/attention-btn.html"></template>
+    <template src="./src/new-box.html"></template>
 
-    <script src="./src/attention-btn.js" lang="es6"></script>
+    <script src="./src/new-box.js" lang="es6"></script>
 
     /src
-    ---attention-btn.scss
-    ---attention-btn.html
-    ---attention-btn.js
+    ---new-box.scss
+    ---new-box.html
+    ---new-box.js
 
     ./cmp.config.js
     ./karma.conf.js
     ./package.json
 
-
-
-
-### build command
+### Build command
     cmpjs build

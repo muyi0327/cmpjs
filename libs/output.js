@@ -234,10 +234,20 @@ exports.createComponent = function(name, options){
         console.log('the file ./package.json is created success!');
     });
 
-    // create .gitignore file
-    fs.createReadStream(path.join(__dirname,'../template/.gitignore')).pipe(fs.createWriteStream(path.join(dirName, './.gitignore')));
+    // create .gitignore karma.conf.js file
+    ['.gitignore','karma.conf.js'].forEach(function (name) {
+        fs.createReadStream(path.join(__dirname,'../template/' + name)).pipe(fs.createWriteStream(path.join(dirName, './' + name)));
+    });
 
-    console.log(combine)
+    // create README file
+    fs.readFile(path.join(__dirname, '../template/README.md'), 'utf8', function(err, data){
+        if (err) throw err;
+        data = data.replace(regName, name);
+        fs.writeFile(path.join(dirName, './README.md'), data, function(err) {
+            if (err) throw err;
+            console.log('the file ./README.md is created success!');
+        });
+    });
 
     if (!combine){
         // create entry file
@@ -278,7 +288,7 @@ exports.createComponent = function(name, options){
         });
     }else{
         // create entry file
-        fs.readFile(path.join(__dirname, '../template/index.combine.cmp'), 'utf8', function(err, data){
+        fs.readFile(path.join(__dirname, '../template/index.cmp'), 'utf8', function(err, data){
             if (err) throw err;
             data = data.replace(regName, name);
             fs.writeFile(path.join(dirName, './index.cmp'), data, function(err) {

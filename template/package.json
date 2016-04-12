@@ -1,6 +1,7 @@
 {
     "name": "{{name}}",
     "version": "1.0.0",
+    "private": false,
     "description": "components",
     "main": "index.cmp",
     "directories": {
@@ -20,8 +21,8 @@
     ],
     "author": "",
     "license": "ISC",
-    "dependencies": {},
-    "devDependencies": {
+    "dependencies": {
+        "brfs": "^1.4.3",
         "jasmine-core": "^2.4.1",
         "karma": "^0.13.21",
         "karma-chrome-launcher": "^0.2.2",

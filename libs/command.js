@@ -1,11 +1,13 @@
 "use strict";
 var inquirer = require("inquirer");
+console.log('commands start .......')
 var path = require('path');
 var fs = require('fs');
 var output = require('./output');
 var baseDir = process.cwd();
 var conf = require('./config');
 var defaultConfigPath = './cmp.config.js';
+
 
 /**
  * regist commands

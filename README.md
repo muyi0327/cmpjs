@@ -6,3 +6,14 @@ Components of the generation tool
 
 ## fix build slow problem
     If your NPM version is 2.x, execute the 'npm dedupe' after the execution of the 'npm install' command.
+
+## Documentation
+
+### create command
+    cmpjs create
+
+#### example
+    aaaa
+
+### build command
+    cmpjs build

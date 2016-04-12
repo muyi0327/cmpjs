@@ -10,10 +10,10 @@ Components of the generation tool
 ## Documentation
 
 ### create command
-    cmpjs create
+    cmpjs create <componentName> [--combine]
 
 #### example
-    aaaa
+    cmpjs create new-box --combine
 
 ### build command
     cmpjs build

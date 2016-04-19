@@ -75,12 +75,17 @@ exports.getNodeContent = function(node) {
  * @param originType {String} sass or less
  * @param options {Object}
  **/
-exports.compileCss = function(str, originType, callback) {
+exports.compileCss = function(str, originType, callback, importCss) {
+
     var cssStr = '';
     originType = originType || 'sass';
 
     if (typeof callback !== 'function') {
         return console.log('arguments 2 must be a function!');
+    }
+
+    if (!importCss){
+        return callback(null, '');
     }
 
     if (str instanceof Buffer){
@@ -154,7 +159,7 @@ exports.compileJs = function(str, originType, options) {
 exports.formatJs = function(str, formats, options) {
     var formatCodes = {};
     formats.forEach(function(format) {
-        var _format = format,_str;
+        var _format = format, _str;
         if (format=='cmd'){
             _format = 'commonjs';
         }

@@ -28,10 +28,12 @@ function build(program) {
         .description('run build commands for components')
         .option("-f, --format [mode]", "Which setup mode to use")
         .option("-c, --config [path]", "config file path")
+        .option("-d, --dist [dist]", "dist dir path")
         .action(function (entry, options) {
             console.log('build file start..');
             options = options || {};
             var format = options.format,
+                dist = options.dist,
                 configSet = {},
                 _entry, _format,
                 configFilePath = path.join(baseDir, options.config || defaultConfigPath);
@@ -140,8 +142,9 @@ function create(program) {
     program
         .command('create <name>')
         .description('Create component initialization file')
+        .option('-c, --combine', 'merge original source file to entry file')
         .action(function (name, options) {
-            var combine = options.parent.combine;
+            var combine = options.combine;
 
             console.log(combine);
 

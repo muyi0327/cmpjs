@@ -13,37 +13,75 @@ var regName = /\{\{\w+\}\}/g;
 
 
 /**
- * create product files from format object
+ * create component files from format object
  * {
- *    style: {},
- *    script: {},
- *    template: {}
+ *  name: 'component-name',
+ *  format: ['all'],
+ *  version: '1.0.0',
+ *  dest: './dist',
+ *  tags: {
+ *    style: {
+ *      lang: 'sass',
+ *      content: '',
+ *      file: '',
+ *      import: false
+ *    },
+ *    script: {
+ *      lang: 'es6',
+ *      content: '',
+ *      file:''
+ *    },
+ *    template: {
+ *      lang: 'ejs',
+ *      content: '',
+ *      file:'',
+ *      import: false
+ *   }
+ *  }
  * }
  **/
-exports.createFilesFromTags = function (tags, outputFormat, dest, filename, version) {
+exports.createFilesFromTags = function (cmpObj) {
     var style, template, script;
+    var tags = cmpObj.tags, name = cmpObj.name, dest = cmpObj.dest, version = cmpObj.version, formats = cmpObj.formats;
     style = tags.style;
+    // file is first
+    if (style.file){
+        style.content = fs.readFileSync(path.join(baseDir, style.file));
+    }
     util.compileCss(style.content, style.lang || 'sass', function (err, cssString) {
         if (err) {
             return console.log('Error occurred:' + err);
         }
         template = tags.template;
         script = tags.script;
+        // file is first
+        if (script.file){
+            script.content = fs.readFileSync(path.join(baseDir, script.file));
+        }
+
         script = util.compileJs(script.content, script.lang || 'es6');
 
-        template = template ? ("  var __template = '" + htmlMinifier(template.content, {
+        // file is first
+        if (template.file){
+            template.content = fs.readFileSync(path.join(baseDir, template.file));
+        }
+
+        template = (template.import && template.content) ? ("  var __template = '" + htmlMinifier(template.content, {
             removeComments: true,
             collapseWhitespace: true,
             removeTagWhitespace: true
-        })) : '';
+        }))
+        : '';
 
-        cssString = cssString ? "';\n" + __cmp__importComponentStyle.toString()
-        + '\n __cmp__importComponentStyle("' + cssString.replace('\n', '').replace(/"/g, "'") + '","' + filename + '");\n' : '';
+        cssString = cssString ? ("';\n" + __cmp__importComponentStyle.toString()
+        + '\n __cmp__importComponentStyle("' + cssString.replace('\n', '').replace(/"/g, "'") + '","'
+        + filename + '");\n')
+        : '';
 
         script = template + cssString + script;
 
-        exports.createFormats(util.formatJs(script, outputFormat), filename, dest, version);
-    });
+        exports.createFormats(util.formatJs(script, formats), name, dest, version);
+    }, style.import||true);
 }
 /**
  * create build files
@@ -57,6 +95,7 @@ exports.createDest = function (config) {
         entry = config.entry || './index.cmp',
         entryPath = typeof entry == 'string' && path.join(baseDir, entry),
         _tags = {},
+        cmpObj,
         entryKeys, elen = 3;
 
     if (!name) {
@@ -101,7 +140,14 @@ exports.createDest = function (config) {
                     _tags[type].content = str.toString();
                 }
                 if (!elen) {
-                    exports.createFilesFromTags(_tags, outputFormat, dest, name, version);
+                    cmpObj = {
+                        tags: _tags,
+                        formats: outputFormat,
+                        dest: dest,
+                        name: name,
+                        version: version
+                    }
+                    exports.createFilesFromTags(cmpObj);
                 }
             });
         });
@@ -115,7 +161,14 @@ exports.createDest = function (config) {
 
         tags = util.analysisFileContent(data.toString());
 
-        exports.createFilesFromTags(tags, outputFormat, dest, name, version);
+        cmpObj = {
+            tags: tags,
+            formats: outputFormat,
+            dest: dest,
+            name: name,
+            version: version
+        }
+        exports.createFilesFromTags(cmpObj);
     });
 }
 
@@ -289,7 +342,7 @@ exports.createComponent = function(name, options){
         });
     }else{
         // create entry file
-        fs.readFile(path.join(__dirname, '../template/index.cmp'), 'utf8', function(err, data){
+        fs.readFile(path.join(__dirname, '../template/index.combine.cmp'), 'utf8', function(err, data){
             if (err) throw err;
             data = data.replace(regName, name);
             fs.writeFile(path.join(dirName, './index.cmp'), data, function(err) {

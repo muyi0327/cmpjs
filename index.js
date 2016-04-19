@@ -1,14 +1,13 @@
-#!/usr/bin/env node
+var output = require('./libs/output');
+var baseDir = process.cwd();
+var path = require('path');
+var fs = require('fs');
+var glob = require('glob');
 
-var program = require('commander');
-var command = require('./libs/command.js');
-var pkg = require('./package.json');
-
-program
-    .version(pkg.version)
-    .allowUnknownOption();
-
-// register commands
-command.regist(program);
-
-program.parse(process.argv);
+/**
+ * 
+ */
+exports.compileFilesToComponents = function (glob, options) {
+    var files = glob.sync(glob, options);
+    console.log(files);
+}

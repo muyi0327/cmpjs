@@ -1,6 +1,5 @@
 "use strict";
 var inquirer = require("inquirer");
-console.log('commands start .......')
 var path = require('path');
 var fs = require('fs');
 var output = require('./output');

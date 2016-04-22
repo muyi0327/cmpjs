@@ -72,10 +72,10 @@ exports.createFilesFromTags = function (cmpObj) {
             removeTagWhitespace: true
         }))
         : '';
-
-        cssString = cssString ? ("';\n" + __cmp__importComponentStyle.toString()
-        + '\n __cmp__importComponentStyle("' + cssString.replace('\n', '').replace(/"/g, "'") + '","'
-        + filename + '");\n')
+        
+        cssString = cssString ? (";\n" + __cmp__importComponentStyle.toString()
+        + '\n __cmp__importComponentStyle("' + cssString.replace(/\n/g, '').replace(/"/g, "'") + '","'
+        + name + '");\n')
         : '';
 
         script = template + cssString + script;

@@ -1,6 +1,6 @@
 {
   "name": "cmpjs",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "components built tools",
   "main": "index.js",
   "directories": {

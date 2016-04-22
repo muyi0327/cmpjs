@@ -2,12 +2,11 @@ var output = require('./libs/output');
 var baseDir = process.cwd();
 var path = require('path');
 var fs = require('fs');
-var glob = require('glob');
+var output = require('./libs/output');
 
 /**
  * 
  */
-exports.compileFilesToComponents = function (glob, options) {
-    var files = glob.sync(glob, options);
-    console.log(files);
+exports.compileFilesToComponents = function (obj) {
+    output.createFilesFromTags(obj);
 }

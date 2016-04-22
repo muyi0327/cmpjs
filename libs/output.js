@@ -23,25 +23,25 @@ var regName = /\{\{\w+\}\}/g;
  *    style: {
  *      lang: 'sass',
  *      content: '',
- *      file: '',
+ *      file: 'sass!./component.scss',
  *      import: false
  *    },
  *    script: {
  *      lang: 'es6',
  *      content: '',
- *      file:''
+ *      file:'ts!./component.ts'
  *    },
  *    template: {
  *      lang: 'ejs',
  *      content: '',
- *      file:'',
+ *      file:'mustache!./component.html',
  *      import: false
  *   }
  *  }
  * }
  **/
 exports.createFilesFromTags = function (cmpObj) {
-    var style, template, script;
+    var style, template, script, fileArr;
     var tags = cmpObj.tags, name = cmpObj.name, dest = cmpObj.dest, version = cmpObj.version, formats = cmpObj.formats;
     style = tags.style;
     // file is first
@@ -54,6 +54,7 @@ exports.createFilesFromTags = function (cmpObj) {
         }
         template = tags.template;
         script = tags.script;
+        
         // file is first
         if (script.file){
             script.content = fs.readFileSync(path.join(baseDir, script.file));

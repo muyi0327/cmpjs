@@ -45,7 +45,7 @@ exports.createFilesFromTags = function (cmpObj) {
     var tags = cmpObj.tags, name = cmpObj.name, dest = cmpObj.dest, version = cmpObj.version, formats = cmpObj.formats;
     style = tags.style;
     // file is first
-    if (style.file){
+    if (style.file) {
         style.content = fs.readFileSync(path.join(baseDir, style.file));
     }
     util.compileCss(style.content, style.lang || 'sass', function (err, cssString) {
@@ -54,16 +54,16 @@ exports.createFilesFromTags = function (cmpObj) {
         }
         template = tags.template;
         script = tags.script;
-        
+
         // file is first
-        if (script.file){
+        if (script.file) {
             script.content = fs.readFileSync(path.join(baseDir, script.file));
         }
 
         script = util.compileJs(script.content, script.lang || 'es6');
 
         // file is first
-        if (template.file){
+        if (template.file) {
             template.content = fs.readFileSync(path.join(baseDir, template.file));
         }
 
@@ -72,17 +72,17 @@ exports.createFilesFromTags = function (cmpObj) {
             collapseWhitespace: true,
             removeTagWhitespace: true
         }))
-        : '';
-        
+            : '';
+
         cssString = cssString ? (";\n" + __cmp__importComponentStyle.toString()
-        + '\n __cmp__importComponentStyle("' + cssString.replace(/\n/g, '').replace(/"/g, "'") + '","'
-        + name + '");\n')
-        : '';
+            + '\n __cmp__importComponentStyle("' + cssString.replace(/\n/g, '').replace(/"/g, "'") + '","'
+            + name + '");\n')
+            : '';
 
         script = template + cssString + script;
 
         exports.createFormats(util.formatJs(script, formats), name, dest, version);
-    }, style.import||true);
+    }, style.import || true);
 }
 /**
  * create build files
@@ -262,107 +262,233 @@ exports.createFormats = function (formatCodes, name, dest, version) {
  * @param name {String} component name
  * @param options {Object} component options
  */
-exports.createComponent = function(name, options){
-
+exports.createComponent = function (name, options) {
     options = options || {};
-
-    var dirName = path.join(baseDir, './' + name);
+    
     var combine = !!options.combine;
-    //var frs = fs.createReadStream('../template/.gitignore');
-    //var fws = fs.createWriteStream(path.join(baseDir,'./.gitignore'));
-
-    config = "'use strict'\n\nmodule.exports=" + JSON.stringify(config,null,4);
-    packageJSON = JSON.stringify(packageJSON,null,4);
-
-    config = config.replace(regName, name);
-    packageJSON = packageJSON.replace(regName, name);
 
     // create cmp.config.js file
-    fs.writeFile(path.join(dirName, './cmp.config.js'), config, function(err) {
-        if (err) throw err;
-        console.log('the file config.js is created success!');
+    createConf({name:name}, function(err){
+       if (err) throw err;
+       console.log('the file cmp.config.js created success!') 
     });
 
     // create package.json
-    fs.writeFile(path.join(dirName, './package.json'), packageJSON, function(err) {
+    createPkg({name: name}, function(err){
         if (err) throw err;
         console.log('the file ./package.json is created success!');
     });
-
-    // create .gitignore karma.conf.js file
-    ['.gitignore','karma.conf.js'].forEach(function (name) {
-        fs.createReadStream(path.join(__dirname,'../template/' + name)).pipe(fs.createWriteStream(path.join(dirName, './' + name)));
-    });
-
-    // create README file
-    fs.readFile(path.join(__dirname, '../template/README.md'), 'utf8', function(err, data){
+    
+    // create .gitignore
+    createIgnore({name: name}, function(err){
         if (err) throw err;
-        data = data.replace(regName, name);
-        fs.writeFile(path.join(dirName, './README.md'), data, function(err) {
-            if (err) throw err;
-            console.log('the file ./README.md is created success!');
-        });
+        console.log('the file .gitignore is created success!');
     });
-
-    if (!combine){
-        // create entry file
-        fs.readFile(path.join(__dirname, '../template/index.cmp'), 'utf8', function(err, data){
+    
+    // create karma.conf.js
+    createTest({name: name}, function(err){
+        if (err) throw err;
+        console.log('the file karmak.conf.js is created success!');
+    });
+    
+    // create readme
+    createReadme({name: name}, function(err){
+        if (err) throw err;
+        console.log('the file ./README.md is created success!');
+    });
+    
+    // create entry
+    createEntery({name:name,combine:combine}, function(err){
+        if (err) throw err;
+        console.log('the file ' + (combine ? 'index.combine.cmp' : 'index.cmp') + ' is created success!');
+    });
+    
+    if (!combine) {
+        createCombileSrc({name:name}, function(err){
             if (err) throw err;
-            data = data.replace(regName, name);
-            fs.writeFile(path.join(dirName, './index.cmp'), data, function(err) {
-                if (err) throw err;
-                console.log('the file ./index.cmp is created success!');
-            });
         });
-        // create src dir
-        if (!fs.existsSync(path.join(dirName, './src'))){
-            fs.mkdirSync(path.join(dirName, './src'))
-        }
-
-        // create development file
-        ['js', 'scss', 'html'].forEach(function(type){
-            var fileName = './src/' + name + '.' + type;
-            var content = '';
-            switch(type){
-                case 'scss':
-                    content = '.' + name + ' {\n\n}';
-                    break;
-                case 'html':
-                    content = '<'+name+'></'+name+'>';
-                    break;
-                case 'js':
-                    content = '';
-                    break;
-                default :
-                    break;
-            }
-            fs.writeFile(path.join(dirName, fileName), content, function(err) {
-                if (err) throw err;
-                console.log('the file ' + fileName +' is created success!');
-            });
-        });
-    }else{
-        // create entry file
-        fs.readFile(path.join(__dirname, '../template/index.combine.cmp'), 'utf8', function(err, data){
-            if (err) throw err;
-            data = data.replace(regName, name);
-            fs.writeFile(path.join(dirName, './index.cmp'), data, function(err) {
-                if (err) throw err;
-                console.log('the file ./index.cmp is created success!');
-            });
-        });
-    }
-
+    } 
+    
     // create test files
-    if (!fs.existsSync(path.join(dirName, './test'))){
-        fs.mkdir(path.join(dirName, './test'), function(err){
-            if (err) throw err;
-            console.log('the dir ./test is created success!');
-        });
-    }
+    
 }
 
+/**
+ * create src director
+ * @param  {any} opts
+ * @param  {any} callback
+ */
+function createCombileSrc(opts, callback) {
+    if (!opts) {
+        return callback('arguments error')
+    }
+    var name = opts.name, 
+  
+    dirName = path.join(baseDir, './' + name);
+    // create src dir
+    if (!fs.existsSync(path.join(dirName, './src'))) {
+        fs.mkdirSync(path.join(dirName, './src'))
+    }
 
+    // create development file
+    ['js', 'scss', 'html'].forEach(function (type) {
+        var fileName = './src/' + name + '.' + type;
+        var content = '';
+        switch (type) {
+            case 'scss':
+                content = '.' + name + ' {\n\n}';
+                break;
+            case 'html':
+                content = '<' + name + '></' + name + '>';
+                break;
+            case 'js':
+                content = '';
+                break;
+            default:
+                break;
+        }
+        fs.writeFile(path.join(dirName, fileName), content, function (err) {
+            if (err) throw err;
+            console.log('the file ' + fileName + ' is created success!');
+        });
+    });
+}
+
+/**
+ * create .gitignore
+ * @param  {Object} opts
+ * @param  {Function} callback
+ */
+function createIgnore(opts, callback) {
+    if (!opts) {
+        return callback('arguments error')
+    }
+
+    opts.fileName = '.gitignore';
+    createFileFromeTemplate(opts, callback);
+}
+
+/**
+ * create karma.conf.js
+ * @param  {Object} opts
+ * @param  {Function} callback
+ */
+function createTest(opts, callback) {
+    if (!opts) {
+        return callback('arguments error')
+    }
+
+    opts.fileName = 'karma.conf.js';
+    createFileFromeTemplate(opts, callback);
+}
+
+/**
+ * create readme
+ * @param  {Objectany} opts
+ * @param  {Function} callback
+ */
+function createReadme(opts, callback) {
+    if (!opts) {
+        return callback('arguments error')
+    }
+
+    opts.fileName = 'README.md';
+    createFileFromeTemplate(opts, callback);
+}
+
+/**
+ * create entry
+ * @param  {Objectany} opts
+ * @param  {Function} callback
+ */
+function createEntery(opts, callback) {
+    if (!opts) {
+        return callback('arguments error')
+    }
+    var combine = opts.combine;
+
+    opts.fileName = combine ? 'index.combine.cmp' : 'index.cmp';
+    createFileFromeTemplate(opts, callback);
+}
+
+/**
+ * create config.js
+ * @param  {Objectany} opts
+ * @param  {Function} callback
+ */
+function createConf(opts, callback) {
+    if (!opts) {
+        return callback('arguments error')
+    }
+    opts.fileName = 'config.js';
+    opts.distName = 'cmp.config.js';
+    createFileFromeTemplate(opts, callback);
+}
+
+/**
+ * create package.json
+ * @param  {Objectany} opts
+ * @param  {Function} callback
+ */
+function createPkg(opts, callback) {
+    if (!opts) {
+        return callback('arguments error')
+    }
+    opts.fileName = 'package.json';
+    createFileFromeTemplate(opts, callback);
+}
+
+/**
+ * create test director
+ * @param  {Objectany} opts
+ * @param  {Function} callback
+ */
+function createTestDir(opts, callback){
+    var name = opts.name, 
+    dirName=path.join(baseDir, './' + name);
+    
+    if (!fs.existsSync(path.join(dirName, './test'))) {
+        return fs.mkdir(path.join(dirName, './test'), function (err) {
+            if (err) throw err;
+            callback();
+        });
+    }
+    
+    callback();
+}
+
+/**
+ * create files from template
+ * @param  {Objectany} opts
+ * @param  {Function} callback
+ */
+function createFileFromeTemplate(opts, callback) {
+
+    opts = opts || {};
+
+    var name = opts.name, 
+        fileName = opts.fileName,
+        distName = opts.distName || fileName,
+        dir = path.join(baseDir, './' + name),
+        url = path.join(__dirname, '../template/' + fileName),
+        _pkg = fs.readFile(url, function (err, data) {
+            if (err) {
+                return console.log(err), callback(err);
+            }
+            
+            data = String(data).replace(regName, name);
+
+            fs.writeFile(path.join(dir, './' + distName), data, function (err) {
+                if (err) {
+                    console.log(err), callback(err);
+                }
+            });
+        });
+}
+
+/**
+ * 内置导入样式函数
+ */
 function __cmp__importComponentStyle(code, componentName) {
     var styleId = 'cmpjs_' + componentName;
     if (document.querySelector('#' + styleId)) {
@@ -379,3 +505,18 @@ function __cmp__importComponentStyle(code, componentName) {
     var head = document.getElementsByTagName("head")[0];
     head.appendChild(style);
 }
+
+// create config.js
+exports.createConf = createConf;
+
+//  create package.json
+exports.createPkg = createPkg;
+
+// create entery
+exports.createEntery = createEntery;
+
+// create README.md
+exports.createReadme = createReadme;
+
+// create karma.conf.js
+exports.createTest = createTest;

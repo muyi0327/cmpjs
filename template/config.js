@@ -7,5 +7,5 @@ module.exports = {
     "format": "all",
     "importCss": true,
     "importTemplate": true,
-    "entry": "./index.cmp"
+    "entry": "{{entry}}"
 }

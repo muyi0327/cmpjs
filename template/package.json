@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "private": false,
     "description": "components",
-    "main": "index.cmp",
+    "main": "{{main}}",
     "directories": {
         "test": "test"
     },

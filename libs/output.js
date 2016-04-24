@@ -41,7 +41,7 @@ var regName = /\{\{\w+\}\}/g;
  * }
  **/
 exports.createFilesFromTags = function (cmpObj) {
-    var style, template, script, fileArr;
+    var style, template, script, fileArr, scripts;
     var tags = cmpObj.tags, name = cmpObj.name, dest = cmpObj.dest, version = cmpObj.version, formats = cmpObj.formats;
     style = tags.style;
     // file is first
@@ -71,18 +71,20 @@ exports.createFilesFromTags = function (cmpObj) {
             removeComments: true,
             collapseWhitespace: true,
             removeTagWhitespace: true
-        }))
-            : '';
+        })) : '';
 
-        cssString = cssString ? (";\n" + __cmp__importComponentStyle.toString()
+        cssString = (style.import && cssString) ? ("\n" + __cmp__importComponentStyle.toString()
             + '\n __cmp__importComponentStyle("' + cssString.replace(/\n/g, '').replace(/"/g, "'") + '","'
             + name + '");\n')
             : '';
 
-        script = template + cssString + script;
+        script = template + (style.import ? cssString : '') + script;
 
-        exports.createFormats(util.formatJs(script, formats), name, dest, version);
-    }, style.import || true);
+        // format object+
+        scripts = util.formatJs(script, formats);
+
+        exports.createFormats(scripts, name, dest, version);
+    }, style.import !== false);
 }
 /**
  * create build files
@@ -173,7 +175,8 @@ exports.createDest = function (config) {
     });
 }
 
-/** create config file
+/** 
+ * create config file
  *@param options {Object}
  **/
 exports.createConfig = function (options) {
@@ -233,7 +236,7 @@ exports.createFormats = function (formatCodes, name, dest, version) {
     }
 
     // version
-    if (!fs.existsSync(path.join(dest, '/' + version))) {
+    if (version && !fs.existsSync(path.join(dest, '/' + version))) {
         fs.mkdirSync(path.join(dest, '/' + version));
     }
 
@@ -245,7 +248,7 @@ exports.createFormats = function (formatCodes, name, dest, version) {
                 jsStr = util.compressJs(jsStr);
             }
 
-            p = path.join(dest, '/' + version, p);
+            p = version ? path.join(dest, '/' + version, p) : path.join(dest, p);
             fs.writeFile(p, jsStr, 'utf8', function (err, data) {
                 if (err) {
                     return console.log(err);
@@ -264,67 +267,71 @@ exports.createFormats = function (formatCodes, name, dest, version) {
  */
 exports.createComponent = function (name, options) {
     options = options || {};
-    
+
     var combine = !!options.combine;
 
     // create cmp.config.js file
-    createConf({name:name}, function(err){
-       if (err) throw err;
-       console.log('the file cmp.config.js created success!') 
+    createConf({ name: name }, function (err) {
+        if (err) throw err;
+        console.log('the file cmp.config.js created success!')
     });
 
     // create package.json
-    createPkg({name: name}, function(err){
+    createPkg({ name: name }, function (err) {
         if (err) throw err;
         console.log('the file ./package.json is created success!');
     });
-    
+
     // create .gitignore
-    createIgnore({name: name}, function(err){
+    createIgnore({ name: name }, function (err) {
         if (err) throw err;
         console.log('the file .gitignore is created success!');
     });
-    
+
     // create karma.conf.js
-    createTest({name: name}, function(err){
+    createTest({ name: name }, function (err) {
         if (err) throw err;
         console.log('the file karmak.conf.js is created success!');
     });
-    
+
     // create readme
-    createReadme({name: name}, function(err){
+    createReadme({ name: name }, function (err) {
         if (err) throw err;
         console.log('the file ./README.md is created success!');
     });
-    
+
+    // create test files
+    createTestDir({ name: name }, function (err) {
+        if (err) throw err;
+        console.log('the director test  is created success!');
+    });
+
     // create entry
-    createEntery({name:name,combine:combine}, function(err){
+    createEntery({ name: name, combine: combine }, function (err) {
         if (err) throw err;
         console.log('the file ' + (combine ? 'index.combine.cmp' : 'index.cmp') + ' is created success!');
     });
-    
+
     if (!combine) {
-        createCombileSrc({name:name}, function(err){
+        createCombileSrc({ name: name }, function (err) {
             if (err) throw err;
+            process.exit();
         });
-    } 
-    
-    // create test files
-    
+    }
 }
 
 /**
  * create src director
- * @param  {any} opts
- * @param  {any} callback
+ * @param  {Object} opts
+ * @param  {Function} callback
  */
 function createCombileSrc(opts, callback) {
     if (!opts) {
         return callback('arguments error')
     }
-    var name = opts.name, 
-  
-    dirName = path.join(baseDir, './' + name);
+    var name = opts.name,
+
+        dirName = path.join(baseDir, './' + name);
     // create src dir
     if (!fs.existsSync(path.join(dirName, './src'))) {
         fs.mkdirSync(path.join(dirName, './src'))
@@ -443,17 +450,17 @@ function createPkg(opts, callback) {
  * @param  {Objectany} opts
  * @param  {Function} callback
  */
-function createTestDir(opts, callback){
-    var name = opts.name, 
-    dirName=path.join(baseDir, './' + name);
-    
+function createTestDir(opts, callback) {
+    var name = opts.name,
+        dirName = path.join(baseDir, './' + name);
+
     if (!fs.existsSync(path.join(dirName, './test'))) {
         return fs.mkdir(path.join(dirName, './test'), function (err) {
             if (err) throw err;
             callback();
         });
     }
-    
+
     callback();
 }
 
@@ -466,24 +473,32 @@ function createFileFromeTemplate(opts, callback) {
 
     opts = opts || {};
 
-    var name = opts.name, 
+    var name = opts.name,
         fileName = opts.fileName,
         distName = opts.distName || fileName,
         dir = path.join(baseDir, './' + name),
         url = path.join(__dirname, '../template/' + fileName),
         _pkg = fs.readFile(url, function (err, data) {
             if (err) {
-                return console.log(err), callback(err);
+                return console.log(err);
             }
-            
+
             data = String(data).replace(regName, name);
 
             fs.writeFile(path.join(dir, './' + distName), data, function (err) {
                 if (err) {
-                    console.log(err), callback(err);
+                    return console.log(err);
                 }
+                callback();
             });
         });
+}
+
+/**
+ * 
+ */
+function compileCss(){
+    
 }
 
 /**

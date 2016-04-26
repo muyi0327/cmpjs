@@ -95,7 +95,7 @@ exports.createDest = function (config) {
         format = config.format || 'all',
         dest = config.dest || './dist',
         version = config.version || '',
-        entry = config.entry || './index.cmp',
+        entry = config.entry || './src/index.cmp',
         entryPath = typeof entry == 'string' && path.join(baseDir, entry),
         _tags = {},
         cmpObj,
@@ -110,7 +110,7 @@ exports.createDest = function (config) {
         return console.log('Error occurred: component entry file is required!');
     }
 
-    if (format && format !== 'all') {
+    if (format && !util.isType(format,'array')) {
         outputFormat = [format];
     }
 
@@ -268,10 +268,14 @@ exports.createFormats = function (formatCodes, name, dest, version) {
 exports.createComponent = function (name, options) {
     options = options || {};
 
-    var combine = !!options.combine;
+    var combine = !!options.combine,
+    entryFile = './src/index.cmp';
 
     // create cmp.config.js file
-    createConf({ name: name }, function (err) {
+    createConf({ name: name , regData:{
+        name: name,
+        entry: entryFile
+    }}, function (err) {
         if (err) throw err;
         console.log('the file cmp.config.js created success!')
     });
@@ -306,18 +310,12 @@ exports.createComponent = function (name, options) {
         console.log('the director test  is created success!');
     });
 
-    // create entry
-    createEntery({ name: name, combine: combine }, function (err) {
+
+    createSrc({ name: name, combine: combine, entryFile: entryFile}, function (err) {
         if (err) throw err;
-        console.log('the file ' + (combine ? 'index.combine.cmp' : 'index.cmp') + ' is created success!');
+        process.exit();
     });
 
-    if (!combine) {
-        createCombileSrc({ name: name }, function (err) {
-            if (err) throw err;
-            process.exit();
-        });
-    }
 }
 
 /**
@@ -325,16 +323,28 @@ exports.createComponent = function (name, options) {
  * @param  {Object} opts
  * @param  {Function} callback
  */
-function createCombileSrc(opts, callback) {
+function createSrc(opts, callback) {
     if (!opts) {
         return callback('arguments error')
     }
     var name = opts.name,
+        entryFile = opts.entryFile,
+        combine = opts.combine,
 
         dirName = path.join(baseDir, './' + name);
     // create src dir
     if (!fs.existsSync(path.join(dirName, './src'))) {
         fs.mkdirSync(path.join(dirName, './src'))
+    }
+
+    // create entry
+    createEntery({ name: name, combine: combine, subDir: './src' }, function (err) {
+        if (err) throw err;
+        console.log('the file ' + entryFile + ' is created success!');
+    });
+
+    if (!combine) {
+        return;
     }
 
     // create development file
@@ -415,6 +425,7 @@ function createEntery(opts, callback) {
     var combine = opts.combine;
 
     opts.fileName = combine ? 'index.combine.cmp' : 'index.cmp';
+    opts.distName = 'index.cmp';
     createFileFromeTemplate(opts, callback);
 }
 
@@ -474,16 +485,20 @@ function createFileFromeTemplate(opts, callback) {
     opts = opts || {};
 
     var name = opts.name,
+        regData = opts.regData || { name: name },
         fileName = opts.fileName,
+        subDir = opts.subDir || '',
         distName = opts.distName || fileName,
-        dir = path.join(baseDir, './' + name),
+        dir = path.join(baseDir, './' + name, subDir),
         url = path.join(__dirname, '../template/' + fileName),
         _pkg = fs.readFile(url, function (err, data) {
             if (err) {
                 return console.log(err);
             }
 
-            data = String(data).replace(regName, name);
+            data = String(data).replace(new RegExp('{{(\\w+)}}','g'), function () {
+                return regData[arguments[1]] || '';
+            });
 
             fs.writeFile(path.join(dir, './' + distName), data, function (err) {
                 if (err) {
@@ -497,8 +512,8 @@ function createFileFromeTemplate(opts, callback) {
 /**
  * 
  */
-function compileCss(){
-    
+function compileCss() {
+
 }
 
 /**

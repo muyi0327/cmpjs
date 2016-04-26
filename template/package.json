@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "private": false,
     "description": "components",
-    "main": "{{main}}",
+    "main": "{{name}}.js",
     "directories": {
         "test": "test"
     },

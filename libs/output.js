@@ -87,7 +87,7 @@ exports.createFilesFromTags = function (cmpObj) {
     }, style.import !== false);
 }
 /**
- * create build files
+ * create build files 
  **/
 exports.createDest = function (config) {
     config = config || {};
@@ -95,7 +95,7 @@ exports.createDest = function (config) {
         format = config.format || 'all',
         dest = config.dest || './dist',
         version = config.version || '',
-        entry = config.entry || './index.cmp',
+        entry = config.entry || './src/index.cmp',
         entryPath = typeof entry == 'string' && path.join(baseDir, entry),
         _tags = {},
         cmpObj,
@@ -306,18 +306,11 @@ exports.createComponent = function (name, options) {
         console.log('the director test  is created success!');
     });
 
-    // create entry
-    createEntery({ name: name, combine: combine }, function (err) {
+    createSrc({ name: name, combine: combine }, function (err) {
         if (err) throw err;
-        console.log('the file ' + (combine ? 'index.combine.cmp' : 'index.cmp') + ' is created success!');
+        process.exit();
     });
 
-    if (!combine) {
-        createCombileSrc({ name: name }, function (err) {
-            if (err) throw err;
-            process.exit();
-        });
-    }
 }
 
 /**
@@ -325,17 +318,26 @@ exports.createComponent = function (name, options) {
  * @param  {Object} opts
  * @param  {Function} callback
  */
-function createCombileSrc(opts, callback) {
+function createSrc(opts, callback) {
     if (!opts) {
         return callback('arguments error')
     }
     var name = opts.name,
-
-        dirName = path.join(baseDir, './' + name);
+    combine = opts.combine,
+    dirName = path.join(baseDir, './' + name);
+        
     // create src dir
     if (!fs.existsSync(path.join(dirName, './src'))) {
         fs.mkdirSync(path.join(dirName, './src'))
     }
+    
+    // create entry
+    createEntery({ name: name, combine: combine, subDir: './src'}, function (err) {
+        if (err) throw err;
+        console.log('the file ./src/index.cmp is created success!');
+    });
+    
+    if (!combine) return;
 
     // create development file
     ['js', 'scss', 'html'].forEach(function (type) {
@@ -415,6 +417,7 @@ function createEntery(opts, callback) {
     var combine = opts.combine;
 
     opts.fileName = combine ? 'index.combine.cmp' : 'index.cmp';
+    opts.distName = 'index.cmp';
     createFileFromeTemplate(opts, callback);
 }
 
@@ -472,18 +475,22 @@ function createTestDir(opts, callback) {
 function createFileFromeTemplate(opts, callback) {
 
     opts = opts || {};
-
     var name = opts.name,
         fileName = opts.fileName,
         distName = opts.distName || fileName,
-        dir = path.join(baseDir, './' + name),
+        regData = util.assign({}, opts.regData||{},{name:name}),
+        subDir = opts.subDir || '',
+        dir = path.join(baseDir, './' + name, subDir),
         url = path.join(__dirname, '../template/' + fileName),
         _pkg = fs.readFile(url, function (err, data) {
             if (err) {
                 return console.log(err);
             }
-
-            data = String(data).replace(regName, name);
+            
+            var reg = new RegExp('{{(\\w+)}}','g');
+            data = String(data).replace(reg, function(){
+                return regData[arguments[1]]||'';
+            });
 
             fs.writeFile(path.join(dir, './' + distName), data, function (err) {
                 if (err) {
@@ -497,8 +504,8 @@ function createFileFromeTemplate(opts, callback) {
 /**
  * 
  */
-function compileCss(){
-    
+function compileCss() {
+
 }
 
 /**

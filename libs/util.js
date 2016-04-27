@@ -17,14 +17,14 @@ var OS = Object.prototype.toString;
  * @param str {String}
  * @return {Object}
  */
-exports.analysisFileContent = function(str) {
+exports.analysisFileContent = function (str) {
     var analysis = {},
         fragment, nodes;
 
     fragment = parse5.parseFragment(str);
     nodes = fragment.childNodes || [];
 
-    nodes.forEach(function(node, index) {
+    nodes.forEach(function (node, index) {
         var lang = dom5.getAttribute(node, 'lang') || '',
             src = dom5.getAttribute(node, 'src') || '',
             content = '';
@@ -50,7 +50,7 @@ exports.analysisFileContent = function(str) {
  * @param node
  * @return {String}
  */
-exports.getNodeContent = function(node) {
+exports.getNodeContent = function (node) {
     if (!node) {
         return '';
     }
@@ -75,7 +75,7 @@ exports.getNodeContent = function(node) {
  * @param originType {String} sass or less
  * @param options {Object}
  **/
-exports.compileCss = function(str, originType, callback, importCss) {
+exports.compileCss = function (str, originType, callback, importCss) {
 
     var cssStr = '';
     originType = originType || 'sass';
@@ -84,11 +84,11 @@ exports.compileCss = function(str, originType, callback, importCss) {
         return console.log('arguments 2 must be a function!');
     }
 
-    if (!importCss){
+    if (!importCss) {
         return callback(null, '');
     }
 
-    if (str instanceof Buffer){
+    if (str instanceof Buffer) {
         str = str.toString();
     }
 
@@ -101,7 +101,7 @@ exports.compileCss = function(str, originType, callback, importCss) {
             sass.render({
                 data: str,
                 outputStyle: 'compressed'
-            }, function(err, result) {
+            }, function (err, result) {
                 if (typeof callback == 'function') {
                     if (err) {
                         return callback(err);
@@ -113,7 +113,7 @@ exports.compileCss = function(str, originType, callback, importCss) {
         case 'less':
             less.render(str, {
                 compress: true
-            }, function(err, cssTree) {
+            }, function (err, cssTree) {
                 if (typeof callback == 'function') {
                     if (err) {
                         return callback(err);
@@ -132,7 +132,7 @@ exports.compileCss = function(str, originType, callback, importCss) {
  * @param originType {String} coffe, es6, typeScript
  * @param options {Object}
  **/
-exports.compileJs = function(str, originType, options) {
+exports.compileJs = function (str, originType, options) {
     str = str || '';
     switch (originType) {
         case 'ts':
@@ -156,11 +156,11 @@ exports.compileJs = function(str, originType, options) {
  * @param str {String} jsString
  * @param formats {Array} format types amd, umd, commonjs
  **/
-exports.formatJs = function(str, formats, options) {
+exports.formatJs = function (str, formats, options) {
     var formatCodes = {};
-    formats.forEach(function(format) {
+    formats.forEach(function (format) {
         var _format = format, _str;
-        if (format=='cmd'){
+        if (format == 'cmd') {
             _format = 'commonjs';
         }
 
@@ -169,7 +169,7 @@ exports.formatJs = function(str, formats, options) {
             plugins: [require("babel-plugin-transform-es2015-modules-" + _format)]
         }).code;
 
-        if (format=='cmd') {
+        if (format == 'cmd') {
             _str = 'define(function(require, exports, module){\n' + _str + '\n});'
         }
 
@@ -183,7 +183,7 @@ exports.formatJs = function(str, formats, options) {
  * compress javascript file
  * @param code {String} javascript string
  **/
-exports.compressJs = function(code) {
+exports.compressJs = function (code) {
     var ast = UglifyJS.parse(code);
     ast.figure_out_scope();
     ast.compute_char_frequency();
@@ -193,6 +193,26 @@ exports.compressJs = function(code) {
     return code;
 }
 
-exports.isType = function(o,type){
+exports.isType = function (o, type) {
     return OS.call(o).toLocaleLowerCase() == '[object ' + type.toLowerCase() + ']';
 }
+
+exports.assign = function (target) {
+    'use strict';
+    if (target === undefined || target === null) {
+        throw new TypeError('Cannot convert undefined or null to object');
+    }
+
+    var output = Object(target);
+    for (var index = 1; index < arguments.length; index++) {
+        var source = arguments[index];
+        if (source !== undefined && source !== null) {
+            for (var nextKey in source) {
+                if (source.hasOwnProperty(nextKey)) {
+                    output[nextKey] = source[nextKey];
+                }
+            }
+        }
+    }
+    return output;
+};

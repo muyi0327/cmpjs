@@ -1,6 +1,7 @@
 var parse5 = require('parse5');
 var dom5 = require('dom5');
 var fs = require('fs');
+var path = require('path');
 var babel = require('babel-core');
 var baseDir = process.cwd();
 var sass = require('node-sass');
@@ -14,35 +15,38 @@ var OS = Object.prototype.toString;
 
 /**
  * analysis childNodes to {template, style, script}
- * @param str {String}
+ * @param file {String}
  * @return {Object}
  */
-exports.analysisFileContent = function (str) {
-    var analysis = {},
-        fragment, nodes;
+exports.analysisFileContent = function (file, callback) {
+    var analysis = {};
 
-    fragment = parse5.parseFragment(str);
-    nodes = fragment.childNodes || [];
+    fs.readFile(file, function (err, data) {
+        var str = data.toString(), fragment, nodes;
+        
+        fragment = parse5.parseFragment(str);
+        nodes = fragment.childNodes || [];
 
-    nodes.forEach(function (node, index) {
-        var lang = dom5.getAttribute(node, 'lang') || '',
-            src = dom5.getAttribute(node, 'src') || '',
-            content = '';
-        if (node.nodeName === '#text') return;
-        if (!!src) {
-            content = fs.readFileSync(src, 'utf8');
-        } else {
+        nodes.forEach(function (node, index) {
+            var lang = dom5.getAttribute(node, 'lang') || '',
+                src = dom5.getAttribute(node, 'src') || '',
+                content = '';
+            if (node.nodeName === '#text') return;
+
             content = exports.getNodeContent(node)
-        }
-
-        analysis[node.nodeName] = {
-            type: node.nodeName,
-            lang: lang,
-            content: content
-        }
+            
+            src = path.resolve(path.dirname(file), src);
+            
+            analysis[node.nodeName] = {
+                type: node.nodeName,
+                lang: lang,
+                content: content,
+                file: src
+            }
+        });
+        
+        callback(analysis);
     });
-
-    return analysis;
 };
 
 /**

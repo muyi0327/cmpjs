@@ -46,7 +46,7 @@ exports.createFilesFromTags = function (cmpObj, callback) {
     style = tags.style;
     // file is first
     if (style.file) {
-        style.content = fs.readFileSync(path.join(baseDir, style.file));
+        style.content = fs.readFileSync(path.resolve(baseDir, style.file));
     }
     util.compileCss(style.content, style.lang || 'sass', function (err, cssString) {
         if (err) {
@@ -57,14 +57,14 @@ exports.createFilesFromTags = function (cmpObj, callback) {
 
         // file is first
         if (script.file) {
-            script.content = fs.readFileSync(path.join(baseDir, script.file));
+            script.content = fs.readFileSync(path.resolve(baseDir, script.file));
         }
 
         script = util.compileJs(script.content, script.lang || 'es6');
 
         // file is first
         if (template.file) {
-            template.content = fs.readFileSync(path.join(baseDir, template.file));
+            template.content = fs.readFileSync(path.resolve(baseDir, template.file));
         }
 
         template = (template.import && template.content) ? ("  var __template = '" + htmlMinifier(template.content, {
@@ -157,15 +157,8 @@ exports.createDest = function (config, callback) {
         });
     }
 
-    fs.readFile(entryPath, function (err, data) {
-        var tags;
-        if (err) {
-            throw err;
-        }
-
-        tags = util.analysisFileContent(data.toString());
-
-        cmpObj = {
+    util.analysisFileContent(entryPath, function (tags) {
+        var cmpObj = {
             tags: tags,
             formats: outputFormat,
             dest: dest,
@@ -357,7 +350,7 @@ function createSrc(opts, callback) {
         console.log('the file ./src/index.cmp is created success!');
     });
 
-    if (!combine) {
+    if (combine) {
         return callback();
     }
 

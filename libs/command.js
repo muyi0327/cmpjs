@@ -34,7 +34,8 @@ function build(program) {
             var format = options.format,
                 dist = options.dist,
                 configSet = {},
-                _entry, _format,
+                _entry, 
+                _format,
                 configFilePath = path.join(baseDir, options.config || defaultConfigPath);
 
             if (!fs.existsSync(configFilePath)) {
@@ -49,8 +50,8 @@ function build(program) {
             _format = configSet.format;
 
             // options is first
-            configSet.entry = entry || _entry;
-            configSet.format = format || _format || 'all';
+            configSet.entry = entry || _entry || conf.entry;
+            configSet.format = format || _format || conf.format;
 
             output.createDest(configSet);
         });
@@ -144,8 +145,6 @@ function create(program) {
         .option('-c, --combine', 'merge original source file to entry file')
         .action(function (name, options) {
             var combine = options.combine;
-
-            console.log(combine);
 
             if(!name){
                 return console.log('component name is required!')

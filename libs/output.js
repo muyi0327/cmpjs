@@ -40,7 +40,7 @@ var regName = /\{\{\w+\}\}/g;
  *  }
  * }
  **/
-exports.createFilesFromTags = function (cmpObj) {
+exports.createFilesFromTags = function (cmpObj, callback) {
     var style, template, script, fileArr, scripts;
     var tags = cmpObj.tags, name = cmpObj.name, dest = cmpObj.dest, version = cmpObj.version, formats = cmpObj.formats;
     style = tags.style;
@@ -86,10 +86,11 @@ exports.createFilesFromTags = function (cmpObj) {
         exports.createFormats(scripts, name, dest, version);
     }, style.import !== false);
 }
+
 /**
  * create build files 
  **/
-exports.createDest = function (config) {
+exports.createDest = function (config, callback) {
     config = config || {};
     var name = config.name,
         format = config.format || 'all',
@@ -110,8 +111,8 @@ exports.createDest = function (config) {
         return console.log('Error occurred: component entry file is required!');
     }
 
-    if (format && format !== 'all') {
-        outputFormat = [format];
+    if (format && !util.isType(format,'array')) {
+        outputFormat = format == all ? conf.format : [format];
     }
 
     if (util.isType(entry, 'object')) {
@@ -268,49 +269,67 @@ exports.createFormats = function (formatCodes, name, dest, version) {
 exports.createComponent = function (name, options) {
     options = options || {};
 
-    var combine = !!options.combine;
+    var combine = !!options.combine,
+    createNum = 7,
+    entryFile = './src/index.cmp';
+    
+    function checkEnd(){
+        if (!--createNum){
+            process.exit(0);
+        }
+    }
 
     // create cmp.config.js file
-    createConf({ name: name }, function (err) {
+    createConf({ name: name , regData:{
+        name: name,
+        entry: entryFile
+    }}, function (err) {
         if (err) throw err;
+        checkEnd();
         console.log('the file cmp.config.js created success!')
     });
 
     // create package.json
     createPkg({ name: name }, function (err) {
         if (err) throw err;
+        checkEnd();
         console.log('the file ./package.json is created success!');
     });
 
     // create .gitignore
     createIgnore({ name: name }, function (err) {
         if (err) throw err;
+        checkEnd();
         console.log('the file .gitignore is created success!');
     });
 
     // create karma.conf.js
     createTest({ name: name }, function (err) {
         if (err) throw err;
+        checkEnd();
         console.log('the file karmak.conf.js is created success!');
     });
 
     // create readme
     createReadme({ name: name }, function (err) {
         if (err) throw err;
+        checkEnd();
         console.log('the file ./README.md is created success!');
     });
 
     // create test files
     createTestDir({ name: name }, function (err) {
         if (err) throw err;
+        checkEnd();
         console.log('the director test  is created success!');
     });
 
-    createSrc({ name: name, combine: combine }, function (err) {
+    // create src files
+    createSrc({ name: name, combine: combine, entryFile: entryFile}, function (err) {
         if (err) throw err;
-        process.exit();
+        checkEnd();
+        console.log('the director src  is created success!');
     });
-
 }
 
 /**
@@ -323,12 +342,13 @@ function createSrc(opts, callback) {
         return callback('arguments error')
     }
     var name = opts.name,
-    combine = opts.combine,
-    dirName = path.join(baseDir, './' + name);
-        
+        entryFile = opts.entryFile,
+        combine = opts.combine,
+        dirName = path.join(baseDir, './' + name);
+
     // create src dir
     if (!fs.existsSync(path.join(dirName, './src'))) {
-        fs.mkdirSync(path.join(dirName, './src'))
+        fs.mkdirSync(path.join(dirName, './src'));
     }
     
     // create entry
@@ -336,8 +356,10 @@ function createSrc(opts, callback) {
         if (err) throw err;
         console.log('the file ./src/index.cmp is created success!');
     });
-    
-    if (!combine) return;
+
+    if (!combine) {
+        return callback();
+    }
 
     // create development file
     ['js', 'scss', 'html'].forEach(function (type) {
@@ -357,7 +379,13 @@ function createSrc(opts, callback) {
                 break;
         }
         fs.writeFile(path.join(dirName, fileName), content, function (err) {
-            if (err) throw err;
+            if (err) {
+                callback();
+                throw err;
+            }
+            if (type=='html'){
+                callback();
+            }
             console.log('the file ' + fileName + ' is created success!');
         });
     });
@@ -477,6 +505,7 @@ function createFileFromeTemplate(opts, callback) {
     opts = opts || {};
     var name = opts.name,
         fileName = opts.fileName,
+        subDir = opts.subDir || '',
         distName = opts.distName || fileName,
         regData = util.assign({}, opts.regData||{},{name:name}),
         subDir = opts.subDir || '',
@@ -486,10 +515,9 @@ function createFileFromeTemplate(opts, callback) {
             if (err) {
                 return console.log(err);
             }
-            
-            var reg = new RegExp('{{(\\w+)}}','g');
-            data = String(data).replace(reg, function(){
-                return regData[arguments[1]]||'';
+
+            data = String(data).replace(new RegExp('{{(\\w+)}}','g'), function () {
+                return regData[arguments[1]] || '';
             });
 
             fs.writeFile(path.join(dir, './' + distName), data, function (err) {

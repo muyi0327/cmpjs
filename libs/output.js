@@ -112,7 +112,7 @@ exports.createDest = function (config, callback) {
     }
 
     if (format && !util.isType(format,'array')) {
-        outputFormat = format == all ? conf.format : [format];
+        outputFormat = format == 'all' ? conf.format : [format];
     }
 
     if (util.isType(entry, 'object')) {

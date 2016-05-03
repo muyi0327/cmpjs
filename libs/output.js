@@ -40,7 +40,7 @@ var regName = /\{\{\w+\}\}/g;
  *  }
  * }
  **/
-exports.createFilesFromTags = function (cmpObj, callback) {
+function createFilesFromTags(cmpObj, callback) {
     var style, template, script, fileArr, scripts;
     var tags = cmpObj.tags, name = cmpObj.name, dest = cmpObj.dest, version = cmpObj.version, formats = cmpObj.formats;
     style = tags.style;
@@ -83,20 +83,20 @@ exports.createFilesFromTags = function (cmpObj, callback) {
         // format object+
         scripts = util.formatJs(script, formats);
 
-        exports.createFormats(scripts, name, dest, version);
+        createFormats(scripts, name, dest, version);
     }, style.import !== false);
 }
 
 /**
  * create build files 
  **/
-exports.createDest = function (config, callback) {
-    config = config || {};
-    var name = config.name,
-        format = config.format || 'all',
-        dest = config.dest || './dist',
-        version = config.version || '',
-        entry = config.entry || './src/index.cmp',
+function createDest(opts, callback) {
+    opts = opts || {};
+    var name = opts.name,
+        format = opts.format || 'all',
+        dest = opts.dest || './dist',
+        version = opts.version || '',
+        entry = opts.entry || './src/index.cmp',
         entryPath = typeof entry == 'string' && path.join(baseDir, entry),
         _tags = {},
         cmpObj,
@@ -151,7 +151,7 @@ exports.createDest = function (config, callback) {
                         name: name,
                         version: version
                     }
-                    exports.createFilesFromTags(cmpObj);
+                    createFilesFromTags(cmpObj);
                 }
             });
         });
@@ -165,7 +165,7 @@ exports.createDest = function (config, callback) {
             name: name,
             version: version
         }
-        exports.createFilesFromTags(cmpObj);
+        createFilesFromTags(cmpObj);
     });
 }
 
@@ -219,20 +219,21 @@ exports.createConfig = function (options) {
  * @param dest {String}
  * @param version {String}
  **/
-exports.createFormats = function (formatCodes, name, dest, version) {
+ function createFormats(formatCodes, name, dest, version) {
     var keys = Object.keys(formatCodes),
         fileLen = keys.length * 2;
 
     dest = path.join(baseDir, dest);
+    console.log(dest);
 
     if (!fs.existsSync(dest)) {
         fs.mkdirSync(dest);
     }
 
     // version
-    if (version && !fs.existsSync(path.join(dest, '/' + version))) {
-        fs.mkdirSync(path.join(dest, '/' + version));
-    }
+    // if (version && !fs.existsSync(path.join(dest, '/' + version))) {
+    //     fs.mkdirSync(path.join(dest, '/' + version));
+    // }
 
     keys.forEach(function (k, i) {
         [name + '.' + k + '.js', name + '.' + k + '.min.js'].forEach(function (p) {
@@ -242,7 +243,7 @@ exports.createFormats = function (formatCodes, name, dest, version) {
                 jsStr = util.compressJs(jsStr);
             }
 
-            p = version ? path.join(dest, '/' + version, p) : path.join(dest, p);
+            p = path.join(dest, p);
             fs.writeFile(p, jsStr, 'utf8', function (err, data) {
                 if (err) {
                     return console.log(err);
@@ -259,7 +260,7 @@ exports.createFormats = function (formatCodes, name, dest, version) {
  * @param name {String} component name
  * @param options {Object} component options
  */
-exports.createComponent = function (name, options) {
+function createComponent(name, options) {
     options = options || {};
 
     var combine = !!options.combine,
@@ -563,3 +564,14 @@ exports.createReadme = createReadme;
 
 // create karma.conf.js
 exports.createTest = createTest;
+
+// create formats
+exports.createFormats = createFormats;
+
+// create dist
+exports.createDest = createDest;
+
+// create formats
+exports.createFilesFromTags = createFilesFromTags;
+
+exports.createComponent = createComponent;

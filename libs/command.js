@@ -27,14 +27,15 @@ function build(program) {
         .description('run build commands for components')
         .option("-f, --format [mode]", "Which setup mode to use")
         .option("-c, --config [path]", "config file path")
-        .option("-d, --dist [dist]", "dist dir path")
+        .option("-d, --dest [dest]", "dest dir path")
         .action(function (entry, options) {
             console.log('build file start..');
             options = options || {};
             var format = options.format,
-                dist = options.dist,
+                dest = options.dest,
                 configSet = {},
                 _entry, 
+                _dest,
                 _format,
                 configFilePath = path.join(baseDir, options.config || defaultConfigPath);
 
@@ -48,10 +49,12 @@ function build(program) {
 
             _entry = configSet.entry;
             _format = configSet.format;
+            _dest = configSet.dest;
 
             // options is first
             configSet.entry = entry || _entry || conf.entry;
             configSet.format = format || _format || conf.format;
+            configSet.dest = dest||_dest;
 
             output.createDest(configSet);
         });

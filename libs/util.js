@@ -5,6 +5,7 @@ var path = require('path');
 var babel = require('babel-core');
 var baseDir = process.cwd();
 var sass = require('node-sass');
+var stream = require('stream');
 var less = require('less');
 var tsc = require('typescript-compiler');
 var coffee = require('coffee-script');
@@ -201,6 +202,9 @@ exports.isType = function (o, type) {
     return OS.call(o).toLocaleLowerCase() == '[object ' + type.toLowerCase() + ']';
 }
 
+/**
+ * 
+ */
 exports.assign = function (target) {
     'use strict';
     if (target === undefined || target === null) {
@@ -220,3 +224,14 @@ exports.assign = function (target) {
     }
     return output;
 };
+
+/**
+ * string to stream
+ */
+exports.strToStream = function(str){
+    var s = new stream.Readable();
+    s._read = function noop() {}; // redundant? see update below
+    s.push(str);
+    s.push(null);
+    return s;
+}
